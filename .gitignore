@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Build artifacts
+target/
+frontend/dist/
+backend/dist/
+
+# Environment secrets
+.env
+backend/.env
+**/.env.local
+
+# Rust build cache
+.cargo/
+
+# Circuit build outputs (large binary files)
+circuits/build/
+circuits/ptau/
+circom
+
+# Stellar CLI cache
+.stellar/
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/settings.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Codex / Claude artifacts
+.codex/
+.claude/
