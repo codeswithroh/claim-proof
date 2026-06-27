@@ -12,6 +12,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+html, body, #root { width: 100%; }
+
 /* Art Deco: strip all corner rounding globally */
 [class*="rounded"] { border-radius: 0 !important; }
 button, input, select, textarea { border-radius: 0 !important; }

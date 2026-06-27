@@ -2,16 +2,15 @@ import React from "react";
 import { TrendingDown, TrendingUp, Shield, Zap, ArrowRight } from "lucide-react";
 import type { OraclePrices } from "../types";
 
-const C = {
-  bg:       "#0d0b06",
-  card:     "#1a1610",
-  card2:    "#221e14",
-  text:     "#f0e6c8",
-  gold:     "#c9a84c",
-  muted:    "#a89060",
-  faint:    "#6e5c3a",
-  border:   "rgba(201,168,76,0.22)",
-  borderHi: "rgba(201,168,76,0.45)",
+const LD = {
+  bg:      "#FDF7F4",
+  surface: "#FFFFFF",
+  text:    "#18181B",
+  sub:     "#71717A",
+  faint:   "#A1A1AA",
+  border:  "#E4E4E7",
+  gold:    "#C9A84C",
+  goldBg:  "rgba(201,168,76,0.09)",
 };
 
 export interface TemplateConfig {
@@ -30,8 +29,8 @@ interface Template {
   desc: string;
   oracle: string;
   condition: "lte" | "gte";
-  thresholdFn: (prices: OraclePrices) => number; // returns USD float
-  payoutFn: (prices: OraclePrices) => number;    // returns USDC float
+  thresholdFn: (prices: OraclePrices) => number;
+  payoutFn: (prices: OraclePrices) => number;
 }
 
 const TEMPLATES: Template[] = [
@@ -91,12 +90,12 @@ export default function PolicyTemplates({ prices, onSelect }: Props) {
 
   return (
     <div style={{ marginBottom: 36 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div>
-          <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.24em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>Quick Start</div>
-          <h3 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: C.text, letterSpacing: "-0.01em" }}>Policy Templates</h3>
+          <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.gold, marginBottom: 6 }}>Quick Start</div>
+          <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 800, color: LD.text, letterSpacing: "-0.02em" }}>Policy Templates</h3>
         </div>
-        <span style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>Based on live prices · Fully customizable</span>
+        <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint }}>Based on live prices · Fully customizable</span>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
         {TEMPLATES.map(t => {
@@ -105,10 +104,9 @@ export default function PolicyTemplates({ prices, onSelect }: Props) {
           return (
             <div
               key={t.id}
-              className="ad-card"
-              style={{ background: C.card2, border: `1px solid ${C.border}`, padding: "22px 20px", cursor: "pointer", transition: "border-color 0.15s, transform 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderHi; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = ""; }}
+              style={{ background: LD.surface, border: `1px solid ${LD.border}`, padding: "22px 20px", cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(201,168,76,0.5)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = LD.border; e.currentTarget.style.boxShadow = "none"; }}
               onClick={() => onSelect({
                 oracleType: t.oracle,
                 condition: t.condition,
@@ -117,32 +115,34 @@ export default function PolicyTemplates({ prices, onSelect }: Props) {
                 label: t.name,
               })}
             >
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ color: C.gold }}>{t.icon}</div>
-                <span style={{ fontFamily: "sans-serif", fontSize: 8, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.faint, border: `1px solid ${C.border}`, padding: "2px 7px" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+                <div style={{ width: 38, height: 38, background: LD.goldBg, border: `1px solid rgba(201,168,76,0.18)`, display: "flex", alignItems: "center", justifyContent: "center", color: LD.gold }}>
+                  {t.icon}
+                </div>
+                <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, border: `1px solid ${LD.border}`, padding: "2px 8px" }}>
                   {t.tag}
                 </span>
               </div>
-              <h4 className="font-display" style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 6, letterSpacing: "-0.01em" }}>{t.name}</h4>
-              <p style={{ fontFamily: "sans-serif", fontSize: 12, color: C.muted, lineHeight: 1.65, marginBottom: 16 }}>{t.desc}</p>
-              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12, display: "flex", justifyContent: "space-between" }}>
+              <h4 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: LD.text, marginBottom: 6 }}>{t.name}</h4>
+              <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.sub, lineHeight: 1.65, marginBottom: 16 }}>{t.desc}</p>
+              <div style={{ borderTop: `1px solid ${LD.border}`, paddingTop: 12, display: "flex", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: C.faint, marginBottom: 3 }}>Trigger</div>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 600, color: C.gold }}>
+                  <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 3 }}>Trigger</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: LD.gold }}>
                     ${threshold.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: C.faint, marginBottom: 3 }}>Payout</div>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 600, color: C.text }}>{payout} USDC</div>
+                  <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 3 }}>Payout</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: LD.text }}>{payout} USDC</div>
                 </div>
               </div>
               <button style={{
                 marginTop: 14, width: "100%", padding: "9px 0",
-                background: "rgba(201,168,76,0.1)", border: `1px solid rgba(201,168,76,0.25)`,
-                color: C.gold, fontFamily: "sans-serif", fontSize: 9,
-                fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 0,
+                background: LD.goldBg, border: `1px solid rgba(201,168,76,0.25)`,
+                color: LD.gold, fontFamily: "'Work Sans', sans-serif", fontSize: 10,
+                fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}>
                 Use Template <ArrowRight size={11} />
               </button>

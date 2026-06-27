@@ -4,15 +4,14 @@ import { useZkProver } from "../hooks/useZkProver";
 import { useOracle } from "../hooks/useOracle";
 import type { Policy } from "../types";
 
-const C = {
-  bg:     "#0d0b06",
-  card:   "#1a1610",
-  card2:  "#221e14",
-  text:   "#f0e6c8",
-  gold:   "#c9a84c",
-  muted:  "#a89060",
-  faint:  "#6e5c3a",
-  border: "rgba(201,168,76,0.22)",
+const LD = {
+  bg:      "#FDF7F4",
+  surface: "#FFFFFF",
+  text:    "#18181B",
+  sub:     "#71717A",
+  faint:   "#A1A1AA",
+  border:  "#E4E4E7",
+  gold:    "#C9A84C",
 };
 
 interface Props { policy: Policy; onClaimed?: () => void; }
@@ -104,18 +103,18 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
   if (claimState === "done") {
     return (
       <div style={{ textAlign: "center", padding: "32px 0" }}>
-        <div style={{ width: 52, height: 52, border: `1px solid rgba(201,168,76,0.4)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-          <CheckCircle2 size={24} style={{ color: C.gold }} />
+        <div style={{ width: 52, height: 52, background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <CheckCircle2 size={24} style={{ color: "#16a34a" }} />
         </div>
-        <h3 className="font-display" style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 8 }}>Claim Successful</h3>
-        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20 }}>
+        <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: LD.text, marginBottom: 8 }}>Claim Successful</h3>
+        <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.sub, lineHeight: 1.7, marginBottom: 20 }}>
           {(Number(policy.payoutAmount) / 1e7).toLocaleString()} USDC transferred to your beneficiary.
           Verified on Stellar Soroban via Groth16 proof.
         </p>
         {claimTxHash && (
-          <div style={{ padding: "12px 16px", background: C.card2, border: `1px solid ${C.border}`, textAlign: "left" }}>
-            <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>Transaction</div>
-            <div style={{ fontFamily: "monospace", fontSize: 11, color: C.muted, wordBreak: "break-all" }}>{claimTxHash}</div>
+          <div style={{ padding: "12px 16px", background: LD.bg, border: `1px solid ${LD.border}`, textAlign: "left" }}>
+            <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 6 }}>Transaction</div>
+            <div style={{ fontFamily: "monospace", fontSize: 11, color: LD.sub, wordBreak: "break-all" }}>{claimTxHash}</div>
           </div>
         )}
       </div>
@@ -125,10 +124,10 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Policy summary */}
-      <div style={{ padding: "14px 16px", background: C.card2, border: `1px solid ${C.border}` }}>
-        <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>Policy Condition</div>
-        <div style={{ fontFamily: "sans-serif", fontSize: 13, color: C.text }}>
-          Pays <span style={{ fontWeight: 600, color: C.gold }}>{(Number(policy.payoutAmount) / 1e7).toFixed(2)} USDC</span>{" "}
+      <div style={{ padding: "14px 16px", background: LD.bg, border: `1px solid ${LD.border}` }}>
+        <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 6 }}>Policy Condition</div>
+        <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.text }}>
+          Pays <span style={{ fontWeight: 700, color: LD.gold }}>{(Number(policy.payoutAmount) / 1e7).toFixed(2)} USDC</span>{" "}
           when <span style={{ fontWeight: 600 }}>{ORACLE_LABELS[policy.oracleType] ?? policy.oracleType}</span> {conditionLabel}
         </div>
       </div>
@@ -137,18 +136,18 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
       {livePrice !== null && (
         <div style={{
           padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
-          background: liveConditionMet ? "rgba(110,231,183,0.05)" : C.card2,
-          border: liveConditionMet ? "1px solid rgba(110,231,183,0.25)" : `1px solid ${C.border}`,
+          background: liveConditionMet ? "rgba(22,163,74,0.05)" : LD.surface,
+          border: liveConditionMet ? "1px solid rgba(22,163,74,0.25)" : `1px solid ${LD.border}`,
         }}>
           {liveConditionMet
-            ? <TrendingDown size={14} style={{ color: "#6ee7b7", flexShrink: 0 }} />
-            : <TrendingUp   size={14} style={{ color: C.faint,   flexShrink: 0 }} />}
-          <div style={{ fontFamily: "sans-serif", fontSize: 13 }}>
-            <span style={{ fontWeight: 600, color: liveConditionMet ? "#6ee7b7" : C.text }}>
+            ? <TrendingDown size={14} style={{ color: "#16a34a", flexShrink: 0 }} />
+            : <TrendingUp   size={14} style={{ color: LD.faint,  flexShrink: 0 }} />}
+          <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13 }}>
+            <span style={{ fontWeight: 600, color: liveConditionMet ? "#16a34a" : LD.text }}>
               Live {ORACLE_LABELS[policy.oracleType] ?? policy.oracleType}: ${livePrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             {" — "}
-            <span style={{ color: liveConditionMet ? "#6ee7b7" : "#fca5a5" }}>
+            <span style={{ color: liveConditionMet ? "#16a34a" : "#ef4444" }}>
               {liveConditionMet ? "Condition triggered. Claim is valid." : "Condition not yet triggered."}
             </span>
           </div>
@@ -157,14 +156,14 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
 
       {/* Oracle input */}
       <div>
-        <label style={{ display: "block", fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: C.muted, marginBottom: 6 }}>
+        <label style={{ display: "block", fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 6 }}>
           Step 1 — Oracle Value (USD)
         </label>
-        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint, marginBottom: 10 }}>
+        <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint, marginBottom: 10 }}>
           Pre-filled with the live price. The exact value stays private — only the ZK proof is submitted on-chain.
         </p>
         <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.muted, fontFamily: "sans-serif", fontSize: 14 }}>$</span>
+          <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: LD.faint, fontFamily: "'Work Sans', sans-serif", fontSize: 14 }}>$</span>
           <input
             type="number"
             value={oracleValue}
@@ -173,11 +172,11 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
             disabled={state.status === "generating" || claimState === "proven"}
             style={{
               width: "100%", paddingLeft: 30, paddingRight: 16, paddingTop: 12, paddingBottom: 12,
-              background: C.bg, border: `1px solid ${C.border}`,
-              color: C.text, fontFamily: "sans-serif", fontSize: 14, outline: "none", borderRadius: 0,
+              background: LD.surface, border: `1px solid ${LD.border}`,
+              color: LD.text, fontFamily: "'Work Sans', sans-serif", fontSize: 14, outline: "none",
             }}
-            onFocus={e => (e.target.style.borderColor = C.gold)}
-            onBlur={e  => (e.target.style.borderColor = C.border)}
+            onFocus={e => (e.target.style.borderColor = LD.gold)}
+            onBlur={e  => (e.target.style.borderColor = LD.border)}
           />
         </div>
       </div>
@@ -188,11 +187,11 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
           onClick={handleGenerateProof}
           disabled={!oracleValue || state.status === "generating"}
           style={{
-            width: "100%", padding: "13px 0", background: C.gold, border: "none",
-            color: C.bg, cursor: (!oracleValue || state.status === "generating") ? "not-allowed" : "pointer",
-            fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase",
+            width: "100%", padding: "13px 0", background: LD.text, border: "none",
+            color: LD.bg, cursor: (!oracleValue || state.status === "generating") ? "not-allowed" : "pointer",
+            fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            opacity: (!oracleValue || state.status === "generating") ? 0.4 : 1, borderRadius: 0,
+            opacity: (!oracleValue || state.status === "generating") ? 0.4 : 1,
           }}
         >
           {state.status === "generating" ? (
@@ -206,17 +205,17 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
       {/* Proof result + submit */}
       {state.status === "done" && (claimState === "proven" || claimState === "submitting") && (
         <>
-          <div style={{ padding: "16px", background: "rgba(110,231,183,0.04)", border: "1px solid rgba(110,231,183,0.2)" }}>
+          <div style={{ padding: "16px", background: "rgba(22,163,74,0.05)", border: "1px solid rgba(22,163,74,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <CheckCircle2 size={14} style={{ color: "#6ee7b7" }} />
-              <span style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: "#6ee7b7" }}>
+              <CheckCircle2 size={14} style={{ color: "#16a34a" }} />
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: "#16a34a" }}>
                 Proof generated. Condition verified.
               </span>
             </div>
-            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.muted, marginBottom: 12 }}>
+            <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.sub, marginBottom: 12 }}>
               The proof confirms the oracle condition was met without revealing the exact value on-chain.
             </p>
-            <div style={{ padding: "8px 10px", background: C.card2, fontFamily: "monospace", fontSize: 11, color: C.faint }}>
+            <div style={{ padding: "8px 10px", background: LD.bg, border: `1px solid ${LD.border}`, fontFamily: "monospace", fontSize: 11, color: LD.faint }}>
               Public signals: {state.result.publicSignals.slice(0, 3).join(", ")}...
             </div>
           </div>
@@ -225,11 +224,11 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
             onClick={handleSubmitClaim}
             disabled={claimState === "submitting"}
             style={{
-              width: "100%", padding: "13px 0", background: C.gold, border: "none",
-              color: C.bg, cursor: claimState === "submitting" ? "not-allowed" : "pointer",
-              fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase",
+              width: "100%", padding: "13px 0", background: "#16a34a", border: "none",
+              color: "#fff", cursor: claimState === "submitting" ? "not-allowed" : "pointer",
+              fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              opacity: claimState === "submitting" ? 0.6 : 1, borderRadius: 0,
+              opacity: claimState === "submitting" ? 0.6 : 1,
             }}
           >
             {claimState === "submitting" ? (
@@ -243,12 +242,12 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
 
       {/* Errors */}
       {(state.status === "error" || error) && (
-        <div style={{ padding: "12px 16px", display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(252,165,165,0.05)", border: "1px solid rgba(252,165,165,0.2)", color: "#fca5a5" }}>
+        <div style={{ padding: "12px 16px", display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626" }}>
           <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontFamily: "sans-serif", fontSize: 13, flex: 1 }}>
+          <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, flex: 1 }}>
             {state.status === "error" ? (state as any).error : error}
           </span>
-          <button onClick={reset} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#fca5a5", padding: 0, flexShrink: 0 }}>
+          <button onClick={reset} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#dc2626", padding: 0, flexShrink: 0 }}>
             <RotateCcw size={12} />
           </button>
         </div>

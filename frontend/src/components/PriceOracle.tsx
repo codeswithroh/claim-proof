@@ -4,13 +4,13 @@ import { useOracle } from "../hooks/useOracle";
 import { useOracleHistory } from "../hooks/useOracleHistory";
 import PriceSparkline from "./PriceSparkline";
 
-const C = {
-  card:   "#1a1610",
-  gold:   "#c9a84c",
-  text:   "#f0e6c8",
-  muted:  "#a89060",
-  faint:  "#6e5c3a",
-  border: "rgba(201,168,76,0.22)",
+const LD = {
+  surface: "#FFFFFF",
+  text:    "#18181B",
+  sub:     "#71717A",
+  faint:   "#A1A1AA",
+  border:  "#E4E4E7",
+  gold:    "#C9A84C",
 };
 
 interface PriceTile { key: "price_btc" | "price_eth" | "price_xlm"; label: string; ticker: string; }
@@ -47,7 +47,6 @@ export default function PriceOracle() {
     return () => clearTimeout(id);
   }, [prices]);
 
-  // Compute 24h change % from history
   const change24h: Record<string, number | null> = {};
   for (const t of TILES) {
     if (history.length >= 2) {
@@ -63,19 +62,19 @@ export default function PriceOracle() {
     <div style={{ marginBottom: 32 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 5, height: 5, background: C.gold, animation: "ad-blink 2s ease-in-out infinite" }} />
-          <span style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: C.muted }}>
+          <div style={{ width: 6, height: 6, background: "#22c55e", borderRadius: "50%", animation: "ad-blink 2s ease-in-out infinite" }} />
+          <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: LD.faint }}>
             Live Oracle Prices
           </span>
         </div>
         {lastUpdated && (
-          <span style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>
+          <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint }}>
             Updated {lastUpdated.toLocaleTimeString()}
           </span>
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: C.border, border: `1px solid ${C.border}` }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
         {TILES.map(t => {
           const data  = prices?.[t.key];
           const dir   = flash[t.key];
@@ -84,60 +83,49 @@ export default function PriceOracle() {
 
           return (
             <div key={t.key} style={{
-              background: C.card, padding: "22px 24px",
-              borderLeft: dir === "up"   ? `2px solid rgba(110,231,183,0.5)`
-                        : dir === "down" ? `2px solid rgba(252,165,165,0.4)`
-                        : "2px solid transparent",
+              background: LD.surface,
+              border: `1px solid ${LD.border}`,
+              borderTop: dir === "up"   ? `2px solid #22c55e`
+                       : dir === "down" ? `2px solid #ef4444`
+                       : `2px solid transparent`,
+              padding: "20px 22px",
               transition: "border-color 0.3s",
             }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.muted, marginBottom: 4 }}>
+                  <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: LD.faint, marginBottom: 3 }}>
                     {t.ticker}
                   </div>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 500, color: C.faint }}>
+                  <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.sub }}>
                     {t.label}
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                  <div style={{
-                    width: 28, height: 28,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: dir === "up"   ? "rgba(110,231,183,0.1)"
-                              : dir === "down" ? "rgba(252,165,165,0.08)"
-                              : "rgba(201,168,76,0.08)",
-                  }}>
-                    {dir === "up"   ? <TrendingUp   size={13} style={{ color: "#6ee7b7" }} />
-                    : dir === "down" ? <TrendingDown size={13} style={{ color: "#fca5a5" }} />
-                    :                  <Minus        size={13} style={{ color: C.faint }} />}
-                  </div>
-                  {/* 24h sparkline */}
-                  <PriceSparkline history={history} priceKey={t.key} width={72} height={28} />
-                </div>
+                <PriceSparkline history={history} priceKey={t.key} width={88} height={36} />
               </div>
 
               <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                 {loading ? (
-                  <div style={{ height: 28, width: 96, background: "rgba(201,168,76,0.1)", animation: "pulse 2s infinite" }} />
+                  <div style={{ height: 28, width: 96, background: "rgba(201,168,76,0.08)", animation: "pulse 2s infinite", borderRadius: 4 }} />
                 ) : (
-                  <div className="font-display" style={{
-                    fontSize: 24, fontWeight: 700,
-                    color: dir === "up"   ? "#6ee7b7"
-                         : dir === "down" ? "#fca5a5"
-                         : C.gold,
-                    letterSpacing: "-0.01em",
+                  <div style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 24, fontWeight: 800,
+                    color: dir === "up"   ? "#16a34a"
+                         : dir === "down" ? "#dc2626"
+                         : LD.gold,
+                    letterSpacing: "-0.02em",
                     transition: "color 0.3s",
                   }}>
                     {data?.formatted ?? "—"}
                   </div>
                 )}
                 {chg !== null && (
-                  <span style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 600, color: chgUp ? "#6ee7b7" : "#fca5a5" }}>
+                  <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, fontWeight: 600, color: chgUp ? "#16a34a" : "#dc2626" }}>
                     {chgUp ? "+" : ""}{chg.toFixed(2)}%
                   </span>
                 )}
               </div>
-              <div style={{ marginTop: 4, fontFamily: "sans-serif", fontSize: 10, color: C.faint }}>24h</div>
+              <div style={{ marginTop: 4, fontFamily: "'Work Sans', sans-serif", fontSize: 10, color: LD.faint }}>24h change</div>
             </div>
           );
         })}

@@ -4,16 +4,15 @@ import { useOracle } from "../hooks/useOracle";
 import PolicyTemplates from "./PolicyTemplates";
 import type { TemplateConfig } from "./PolicyTemplates";
 
-const C = {
-  bg:       "#0d0b06",
-  card:     "#1a1610",
-  card2:    "#221e14",
-  text:     "#f0e6c8",
-  gold:     "#c9a84c",
-  muted:    "#a89060",
-  faint:    "#6e5c3a",
-  border:   "rgba(201,168,76,0.22)",
-  borderHi: "rgba(201,168,76,0.45)",
+const LD = {
+  bg:      "#FDF7F4",
+  surface: "#FFFFFF",
+  text:    "#18181B",
+  sub:     "#71717A",
+  faint:   "#A1A1AA",
+  border:  "#E4E4E7",
+  gold:    "#C9A84C",
+  goldBg:  "rgba(201,168,76,0.09)",
 };
 
 const ORACLE_OPTIONS = [
@@ -29,16 +28,16 @@ const CONDITION_OPTIONS = [
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "12px 16px",
-  background: C.bg, border: `1px solid ${C.border}`,
-  color: C.text, fontFamily: "sans-serif", fontSize: 14,
-  outline: "none", borderRadius: 0, boxSizing: "border-box",
+  background: LD.surface, border: `1px solid ${LD.border}`,
+  color: LD.text, fontFamily: "'Work Sans', sans-serif", fontSize: 14,
+  outline: "none", boxSizing: "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
-  display: "block", fontFamily: "sans-serif",
-  fontSize: 9, fontWeight: 600,
-  letterSpacing: "0.22em", textTransform: "uppercase",
-  color: C.muted, marginBottom: 10,
+  display: "block", fontFamily: "'Work Sans', sans-serif",
+  fontSize: 10, fontWeight: 700,
+  letterSpacing: "0.14em", textTransform: "uppercase",
+  color: LD.faint, marginBottom: 10,
 };
 
 type FormState = {
@@ -73,7 +72,6 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
   const [policyId, setPolicyId] = useState("");
   const [error, setError]       = useState("");
 
-  // When wallet connects, reset beneficiary field
   useEffect(() => {
     if (walletAddress && form.beneficiaryMode === "self") {
       setForm(f => ({ ...f, beneficiary: walletAddress }));
@@ -133,19 +131,19 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
   if (step === "done") {
     return (
       <div style={{ textAlign: "center", padding: "32px 0" }}>
-        <div style={{ width: 52, height: 52, border: `1px solid rgba(201,168,76,0.4)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", background: C.card2 }}>
-          <CheckCircle2 size={24} style={{ color: C.gold }} />
+        <div style={{ width: 56, height: 56, background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <CheckCircle2 size={26} style={{ color: "#16a34a" }} />
         </div>
-        <h3 className="font-display" style={{ fontSize: 24, fontWeight: 700, color: C.text, marginBottom: 8 }}>Policy Created</h3>
-        <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted, marginBottom: 24, lineHeight: 1.7 }}>
+        <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 800, color: LD.text, marginBottom: 8 }}>Policy Created</h3>
+        <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, color: LD.sub, marginBottom: 24, lineHeight: 1.7 }}>
           Your parametric insurance policy is live on Stellar Soroban. The moment the oracle condition is met, submit a ZK proof and collect your payout instantly.
         </p>
-        <div style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: C.muted, background: C.card2, border: `1px solid ${C.border}`, wordBreak: "break-all", marginBottom: 24 }}>
+        <div style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: 11, color: LD.sub, background: LD.bg, border: `1px solid ${LD.border}`, wordBreak: "break-all", marginBottom: 24, textAlign: "left" }}>
           {policyId}
         </div>
         <button
           onClick={() => { setStep("templates"); setPolicyId(""); setForm(f => ({ ...f, threshold: "", beneficiary: walletAddress ?? "" })); }}
-          style={{ display: "flex", alignItems: "center", gap: 6, margin: "0 auto", background: "transparent", border: "none", cursor: "pointer", color: C.gold, fontFamily: "sans-serif", fontSize: 13, padding: 0, borderRadius: 0 }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none", cursor: "pointer", color: LD.gold, fontFamily: "'Work Sans', sans-serif", fontSize: 13, fontWeight: 600, padding: 0 }}
         >
           <ArrowLeft size={14} /> Create another policy
         </button>
@@ -161,7 +159,7 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
         <div style={{ textAlign: "center", padding: "12px 0" }}>
           <button
             onClick={() => setStep("form")}
-            style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontFamily: "sans-serif", fontSize: 13, textDecoration: "underline", padding: 0 }}
+            style={{ background: "transparent", border: "none", cursor: "pointer", color: LD.sub, fontFamily: "'Work Sans', sans-serif", fontSize: 13, textDecoration: "underline", padding: 0 }}
           >
             Or build a custom policy →
           </button>
@@ -178,33 +176,33 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
     return (
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <div>
-          <h3 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4 }}>Review Policy</h3>
-          <p style={{ fontFamily: "sans-serif", fontSize: 13, color: C.muted }}>Confirm the details before creating on Stellar Soroban.</p>
+          <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 800, color: LD.text, marginBottom: 4 }}>Review Policy</h3>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.sub }}>Confirm the details before creating on Stellar Soroban.</p>
         </div>
-        <div style={{ background: C.card2, border: `1px solid ${C.border}`, padding: 20 }}>
+        <div style={{ background: LD.bg, border: `1px solid ${LD.border}`, padding: 20 }}>
           {[
-            ["Oracle Asset",       oracle?.label],
-            ["Insurance Type",     condition?.label],
-            ["Trigger Threshold",  `$${parseFloat(form.threshold).toLocaleString()}`],
-            ["Payout Amount",      `${form.payoutAmount} USDC`],
-            ["Beneficiary",        benef ? `${benef.slice(0, 6)}…${benef.slice(-4)}` : "—"],
+            ["Oracle Asset",      oracle?.label],
+            ["Insurance Type",    condition?.label],
+            ["Trigger Threshold", `$${parseFloat(form.threshold).toLocaleString()}`],
+            ["Payout Amount",     `${form.payoutAmount} USDC`],
+            ["Beneficiary",       benef ? `${benef.slice(0, 6)}…${benef.slice(-4)}` : "—"],
           ].map(([label, value]) => (
-            <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
-              <span style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.muted }}>{label}</span>
-              <span style={{ fontFamily: "sans-serif", fontSize: 14, fontWeight: 600, color: C.text }}>{value}</span>
+            <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${LD.border}` }}>
+              <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint }}>{label}</span>
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: LD.text }}>{value}</span>
             </div>
           ))}
         </div>
-        <div style={{ padding: "12px 16px", background: "rgba(201,168,76,0.04)", border: `1px solid ${C.border}`, fontFamily: "sans-serif", fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
+        <div style={{ padding: "12px 16px", background: LD.goldBg, border: `1px solid rgba(201,168,76,0.2)`, fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.sub, lineHeight: 1.65 }}>
           When the oracle condition is triggered, generate a ZK proof in your browser and submit it. The Soroban contract verifies the proof on-chain and releases the payout instantly — no human adjuster involved.
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button type="button" onClick={() => setStep("form")}
-            style={{ flex: 1, padding: "12px 0", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, cursor: "pointer", fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 0 }}>
+            style={{ flex: 1, padding: "12px 0", background: "transparent", border: `1px solid ${LD.border}`, color: LD.sub, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <ArrowLeft size={12} /> Back
           </button>
           <button type="submit" disabled={step === "submitting"}
-            style={{ flex: 1, padding: "12px 0", background: C.gold, border: "none", color: C.bg, cursor: step === "submitting" ? "not-allowed" : "pointer", fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: step === "submitting" ? 0.6 : 1, borderRadius: 0 }}>
+            style={{ flex: 1, padding: "12px 0", background: LD.text, border: "none", color: LD.bg, cursor: step === "submitting" ? "not-allowed" : "pointer", fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: step === "submitting" ? 0.6 : 1 }}>
             {step === "submitting" ? "Creating on Stellar…" : "Create Policy"} <ChevronRight size={12} />
           </button>
         </div>
@@ -217,10 +215,10 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <button type="button" onClick={() => setStep("templates")}
-          style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontFamily: "sans-serif", fontSize: 12, display: "flex", alignItems: "center", gap: 5, padding: 0 }}>
+          style={{ background: "transparent", border: "none", cursor: "pointer", color: LD.sub, fontFamily: "'Work Sans', sans-serif", fontSize: 13, display: "flex", alignItems: "center", gap: 5, padding: 0 }}>
           <ArrowLeft size={13} /> Templates
         </button>
-        <span style={{ fontFamily: "sans-serif", fontSize: 10, color: C.faint, letterSpacing: "0.1em", textTransform: "uppercase" }}>Custom Policy</span>
+        <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, color: LD.faint, letterSpacing: "0.12em", textTransform: "uppercase" }}>Custom Policy</span>
       </div>
 
       {/* Oracle */}
@@ -231,16 +229,16 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
             const active = form.oracleType === opt.value;
             return (
               <button key={opt.value} type="button" onClick={() => setForm({ ...form, oracleType: opt.value })}
-                style={{ padding: "14px 12px", textAlign: "left", background: active ? C.gold : C.card2, border: `1px solid ${active ? C.gold : C.border}`, cursor: "pointer", transition: "all 0.15s", borderRadius: 0 }}>
-                <div style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: active ? C.bg : C.text, marginBottom: 3 }}>{opt.label}</div>
-                <div style={{ fontFamily: "sans-serif", fontSize: 11, color: active ? "rgba(13,11,6,0.6)" : C.muted }}>{opt.sub}</div>
+                style={{ padding: "14px 12px", textAlign: "left", background: active ? LD.text : LD.surface, border: `1px solid ${active ? LD.text : LD.border}`, cursor: "pointer", transition: "all 0.15s" }}>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: active ? LD.bg : LD.text, marginBottom: 3 }}>{opt.label}</div>
+                <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: active ? "rgba(253,247,244,0.65)" : LD.faint }}>{opt.sub}</div>
               </button>
             );
           })}
         </div>
         {currentPrice && (
-          <p style={{ marginTop: 8, fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>
-            Current price: <span style={{ color: C.muted }}>{currentPrice.formatted}</span>
+          <p style={{ marginTop: 8, fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint }}>
+            Current price: <span style={{ color: LD.gold, fontWeight: 600 }}>{currentPrice.formatted}</span>
           </p>
         )}
       </div>
@@ -254,10 +252,10 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
             const active = form.condition === opt.value;
             return (
               <button key={opt.value} type="button" onClick={() => setForm({ ...form, condition: opt.value })}
-                style={{ padding: "16px 14px", textAlign: "left", background: active ? C.gold : C.card2, border: `1px solid ${active ? C.gold : C.border}`, cursor: "pointer", transition: "all 0.15s", borderRadius: 0 }}>
-                <Icon size={18} style={{ color: active ? C.bg : C.muted, marginBottom: 8 }} />
-                <div style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: active ? C.bg : C.text, marginBottom: 3 }}>{opt.label}</div>
-                <div style={{ fontFamily: "sans-serif", fontSize: 11, color: active ? "rgba(13,11,6,0.6)" : C.muted }}>{opt.desc}</div>
+                style={{ padding: "16px 14px", textAlign: "left", background: active ? LD.text : LD.surface, border: `1px solid ${active ? LD.text : LD.border}`, cursor: "pointer", transition: "all 0.15s" }}>
+                <Icon size={18} style={{ color: active ? LD.bg : LD.gold, marginBottom: 8 }} />
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: active ? LD.bg : LD.text, marginBottom: 3 }}>{opt.label}</div>
+                <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: active ? "rgba(253,247,244,0.65)" : LD.faint }}>{opt.desc}</div>
               </button>
             );
           })}
@@ -268,17 +266,16 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
       <div>
         <label style={labelStyle}>Trigger Threshold (USD)</label>
         <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: "sans-serif", fontSize: 14, color: C.muted }}>$</span>
+          <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", fontFamily: "'Work Sans', sans-serif", fontSize: 14, color: LD.faint }}>$</span>
           <input type="number" value={form.threshold}
             onChange={e => setForm({ ...form, threshold: e.target.value })}
             placeholder={form.condition === "lte" ? "e.g. 50000" : "e.g. 100000"}
             required min="0"
             style={{ ...inputStyle, paddingLeft: 32 }}
-            onFocus={e => (e.target.style.borderColor = C.gold)}
-            onBlur={e  => (e.target.style.borderColor = C.border)}
+            onFocus={e => (e.target.style.borderColor = LD.gold)}
+            onBlur={e  => (e.target.style.borderColor = LD.border)}
           />
         </div>
-        {/* smart suggestion */}
         {currentPrice && form.condition === "lte" && (
           <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[10, 20, 30].map(pct => {
@@ -286,7 +283,7 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
               return (
                 <button key={pct} type="button"
                   onClick={() => setForm({ ...form, threshold: suggested })}
-                  style={{ fontFamily: "sans-serif", fontSize: 10, color: C.muted, background: "rgba(201,168,76,0.06)", border: `1px solid ${C.border}`, padding: "3px 9px", cursor: "pointer", borderRadius: 0 }}>
+                  style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: LD.sub, background: LD.goldBg, border: `1px solid rgba(201,168,76,0.2)`, padding: "4px 10px", cursor: "pointer" }}>
                   -{pct}% (${Number(suggested).toLocaleString()})
                 </button>
               );
@@ -303,10 +300,10 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
             onChange={e => setForm({ ...form, payoutAmount: e.target.value })}
             min="1" required
             style={{ ...inputStyle, paddingRight: 60 }}
-            onFocus={e => (e.target.style.borderColor = C.gold)}
-            onBlur={e  => (e.target.style.borderColor = C.border)}
+            onFocus={e => (e.target.style.borderColor = LD.gold)}
+            onBlur={e  => (e.target.style.borderColor = LD.border)}
           />
-          <span style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontFamily: "sans-serif", fontSize: 12, color: C.muted }}>USDC</span>
+          <span style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint }}>USDC</span>
         </div>
       </div>
 
@@ -317,15 +314,15 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
           {(["self", "custom"] as const).map(mode => (
             <button key={mode} type="button"
               onClick={() => setForm(f => ({ ...f, beneficiaryMode: mode, beneficiary: mode === "self" ? (walletAddress ?? "") : "" }))}
-              style={{ flex: 1, padding: "10px 0", fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", background: form.beneficiaryMode === mode ? C.gold : C.card2, color: form.beneficiaryMode === mode ? C.bg : C.muted, border: `1px solid ${form.beneficiaryMode === mode ? C.gold : C.border}`, cursor: "pointer", borderRadius: 0 }}>
+              style={{ flex: 1, padding: "10px 0", fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", background: form.beneficiaryMode === mode ? LD.text : LD.surface, color: form.beneficiaryMode === mode ? LD.bg : LD.sub, border: `1px solid ${form.beneficiaryMode === mode ? LD.text : LD.border}`, cursor: "pointer" }}>
               {mode === "self" ? "My Wallet" : "Custom Address"}
             </button>
           ))}
         </div>
         {form.beneficiaryMode === "self" ? (
-          <div style={{ padding: "10px 14px", background: C.card2, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8 }}>
-            <User size={13} style={{ color: C.faint }} />
-            <span style={{ fontFamily: "monospace", fontSize: 12, color: C.muted }}>
+          <div style={{ padding: "10px 14px", background: LD.bg, border: `1px solid ${LD.border}`, display: "flex", alignItems: "center", gap: 8 }}>
+            <User size={13} style={{ color: LD.faint }} />
+            <span style={{ fontFamily: "monospace", fontSize: 12, color: LD.sub }}>
               {walletAddress ? `${walletAddress.slice(0, 8)}…${walletAddress.slice(-6)}` : "Connect wallet first"}
             </span>
           </div>
@@ -337,26 +334,26 @@ export default function CreatePolicy({ onCreated, walletAddress, onOpenWallet, p
             placeholder="G... (Stellar address)"
             required={form.beneficiaryMode === "custom"}
             style={inputStyle}
-            onFocus={e => (e.target.style.borderColor = C.gold)}
-            onBlur={e  => (e.target.style.borderColor = C.border)}
+            onFocus={e => (e.target.style.borderColor = LD.gold)}
+            onBlur={e  => (e.target.style.borderColor = LD.border)}
           />
         )}
       </div>
 
       {error && (
-        <div style={{ padding: "12px 16px", background: "rgba(252,165,165,0.06)", border: "1px solid rgba(252,165,165,0.2)", color: "#fca5a5", fontFamily: "sans-serif", fontSize: 13 }}>
+        <div style={{ padding: "12px 16px", background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626", fontFamily: "'Work Sans', sans-serif", fontSize: 13 }}>
           {error}
         </div>
       )}
 
       {walletAddress ? (
         <button type="submit"
-          style={{ width: "100%", padding: "14px 0", background: C.gold, border: "none", color: C.bg, cursor: "pointer", fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 0 }}>
+          style={{ width: "100%", padding: "14px 0", background: LD.text, border: "none", color: LD.bg, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           Review Policy <ChevronRight size={14} />
         </button>
       ) : (
         <button type="button" onClick={onOpenWallet}
-          style={{ width: "100%", padding: "14px 0", background: C.gold, border: "none", color: C.bg, cursor: "pointer", fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 0 }}>
+          style={{ width: "100%", padding: "14px 0", background: LD.text, border: "none", color: LD.bg, cursor: "pointer", fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           Connect Wallet to Continue <ChevronRight size={14} />
         </button>
       )}

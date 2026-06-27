@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { X, ExternalLink, Loader2, AlertCircle } from "lucide-react";
 
-const C = {
-  bg:     "#0d0b06",
-  card:   "#1a1610",
-  card2:  "#221e14",
-  text:   "#f0e6c8",
-  gold:   "#c9a84c",
-  muted:  "#a89060",
-  faint:  "#6e5c3a",
-  border: "rgba(201,168,76,0.22)",
+const LD = {
+  bg:      "#FDF7F4",
+  surface: "#FFFFFF",
+  text:    "#18181B",
+  sub:     "#71717A",
+  faint:   "#A1A1AA",
+  border:  "#E4E4E7",
+  gold:    "#C9A84C",
 };
 
 // ── Wallet definitions ────────────────────────────────────────────────────────
@@ -209,24 +208,24 @@ export default function WalletModal({ onConnected, onClose }: Props) {
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+      style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(6px)" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: "100%", maxWidth: 360, background: C.card, border: `1px solid ${C.border}`, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+      <div style={{ width: "100%", maxWidth: 380, background: LD.surface, border: `1px solid ${LD.border}`, boxShadow: "0 24px 64px rgba(0,0,0,0.12)" }}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: `1px solid ${LD.border}` }}>
           <div>
-            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 3 }}>Connect Wallet</h2>
-            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>Choose a Stellar-compatible wallet</p>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 800, color: LD.text, marginBottom: 3 }}>Connect Wallet</h2>
+            <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint }}>Choose a Stellar-compatible wallet</p>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: C.card2, border: `1px solid ${C.border}`, cursor: "pointer", color: C.muted, borderRadius: 0 }}>
+          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: LD.bg, border: `1px solid ${LD.border}`, cursor: "pointer", color: LD.sub }}>
             <X size={14} />
           </button>
         </div>
 
         <div style={{ padding: "16px 24px" }}>
           {connectState === "error" && error && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", marginBottom: 16, background: "rgba(252,165,165,0.06)", border: "1px solid rgba(252,165,165,0.2)", color: "#fca5a5", fontFamily: "sans-serif", fontSize: 12 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", marginBottom: 16, background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626", fontFamily: "'Work Sans', sans-serif", fontSize: 12 }}>
               <AlertCircle size={12} style={{ flexShrink: 0, marginTop: 1 }} />
               {error}
             </div>
@@ -234,7 +233,7 @@ export default function WalletModal({ onConnected, onClose }: Props) {
 
           {available.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <p style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 10 }}>Available</p>
+              <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 10 }}>Available</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {available.map(wallet => (
                   <WalletRow key={wallet.id} wallet={wallet} isAvailable loading={connectingId === wallet.id} disabled={connectState === "connecting"} onConnect={() => handleConnect(wallet)} />
@@ -245,8 +244,8 @@ export default function WalletModal({ onConnected, onClose }: Props) {
 
           {notInstalled.length > 0 && (
             <div>
-              {available.length > 0 && <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 16 }} />}
-              <p style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 10 }}>Not installed</p>
+              {available.length > 0 && <div style={{ borderTop: `1px solid ${LD.border}`, marginBottom: 16 }} />}
+              <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 10 }}>Not installed</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {notInstalled.map(wallet => (
                   <WalletRow key={wallet.id} wallet={wallet} isAvailable={false} loading={false} disabled={false} onInstall={() => window.open(wallet.installUrl, "_blank", "noopener")} />
@@ -257,7 +256,7 @@ export default function WalletModal({ onConnected, onClose }: Props) {
         </div>
 
         <div style={{ padding: "8px 24px 20px", textAlign: "center" }}>
-          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: LD.faint }}>
             By connecting you agree to interact with Stellar Testnet only.
           </p>
         </div>
@@ -274,25 +273,25 @@ function WalletRow({ wallet, isAvailable, loading, disabled, onConnect, onInstal
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-      border: `1px solid ${C.border}`,
-      background: isAvailable ? C.card2 : C.bg,
+      border: `1px solid ${LD.border}`,
+      background: isAvailable ? LD.surface : LD.bg,
       opacity: disabled && !loading ? 0.45 : 1,
     }}>
-      <div style={{ width: 34, height: 34, background: C.bg, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+      <div style={{ width: 34, height: 34, background: LD.bg, border: `1px solid ${LD.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
         <img src={wallet.logo} alt={wallet.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: isAvailable ? C.text : C.muted }}>{wallet.name}</div>
-        <div style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>{wallet.desc}</div>
+        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: isAvailable ? LD.text : LD.sub }}>{wallet.name}</div>
+        <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: LD.faint }}>{wallet.desc}</div>
       </div>
       {isAvailable ? (
         <button onClick={onConnect} disabled={disabled}
-          style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "8px 14px", background: C.gold, color: C.bg, border: "none", cursor: disabled ? "not-allowed" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, borderRadius: 0 }}>
+          style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "8px 14px", background: LD.text, color: LD.bg, border: "none", cursor: disabled ? "not-allowed" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", gap: 5 }}>
           {loading ? <><Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />Connecting</> : "Connect"}
         </button>
       ) : (
         <button onClick={onInstall}
-          style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "7px 12px", background: "transparent", color: C.muted, border: `1px solid ${C.border}`, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, borderRadius: 0 }}>
+          style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", padding: "7px 12px", background: "transparent", color: LD.sub, border: `1px solid ${LD.border}`, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", gap: 5 }}>
           Get <ExternalLink size={10} />
         </button>
       )}

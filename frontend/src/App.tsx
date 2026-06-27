@@ -118,28 +118,91 @@ function AdRule({ width = "100%", label }: { width?: string; label?: string }) {
   );
 }
 
+// ── Landing palette (light editorial) ────────────────────────────────────────
+
+const LD = {
+  bg:      "#FDF7F4",
+  surface: "#FFFFFF",
+  text:    "#18181B",
+  sub:     "#71717A",
+  faint:   "#A1A1AA",
+  border:  "#E4E4E7",
+  gold:    "#C9A84C",
+  goldBg:  "rgba(201,168,76,0.09)",
+};
+
+const ldH: React.CSSProperties = {
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontWeight: 800,
+  lineHeight: 1.05,
+  letterSpacing: "-0.025em",
+  color: LD.text,
+};
+const ldBody: React.CSSProperties = {
+  fontFamily: "'Work Sans', sans-serif",
+  fontSize: 16,
+  lineHeight: 1.75,
+  color: LD.sub,
+};
+const ldLabel: React.CSSProperties = {
+  fontFamily: "'Work Sans', sans-serif",
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: "0.13em",
+  textTransform: "uppercase",
+  color: LD.gold,
+  display: "block",
+  marginBottom: 14,
+};
+const ldBtnDark: React.CSSProperties = {
+  fontFamily: "'Work Sans', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  padding: "12px 26px",
+  background: LD.text,
+  color: LD.bg,
+  border: "none",
+  cursor: "pointer",
+  borderRadius: 8,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  textDecoration: "none",
+};
+const ldBtnOutline: React.CSSProperties = {
+  fontFamily: "'Work Sans', sans-serif",
+  fontSize: 14,
+  fontWeight: 600,
+  padding: "11px 24px",
+  background: "transparent",
+  color: LD.text,
+  border: `1.5px solid ${LD.border}`,
+  cursor: "pointer",
+  borderRadius: 8,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  textDecoration: "none",
+};
+
 // ── Landing Nav ───────────────────────────────────────────────────────────────
 
 function LandingNav() {
   const navigate = useNavigate();
   return (
-    <nav style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 50, borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 52px", height: 66, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <AdLogoMark />
-          <span className="font-display" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>
-            ClaimProof
-          </span>
+    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(250,250,248,0.92)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${LD.border}` }}>
+      <div style={{ maxWidth: 1140, margin: "0 auto", padding: "0 48px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img src="/logo.png" alt="ClaimProof" style={{ height: 40, width: "auto", display: "block" }} />
         </div>
-        <div style={{ display: "flex", gap: 36 }}>
-          {(["#how-it-works", "How It Works"] as const) && null}
+        <div style={{ display: "flex", gap: 32 }}>
           {[["#how-it-works", "How It Works"], ["#features", "Features"]].map(([href, label]) => (
-            <a key={href} href={href} style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.muted, textDecoration: "none" }}>
+            <a key={href} href={href} style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, fontWeight: 500, color: LD.sub, textDecoration: "none" }}>
               {label}
             </a>
           ))}
         </div>
-        <button onClick={() => navigate("/dashboard")} style={{ ...btnGold, padding: "12px 28px" }}>
+        <button onClick={() => navigate("/dashboard")} style={{ ...ldBtnDark, padding: "9px 22px", fontSize: 13, borderRadius: 6 }}>
           Launch App
         </button>
       </div>
@@ -209,23 +272,19 @@ function AppNav({ walletAddress, onOpenWallet, onDisconnect }: AppNavProps) {
   const [showAccount, setShowAccount] = useState(false);
 
   return (
-    <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(13,11,6,0.94)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${C.border}` }}>
+    <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(253,247,244,0.92)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${LD.border}` }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 52px", height: 66, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-          <AdLogoMark />
-          <span className="font-display" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>
-            ClaimProof
-          </span>
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <img src="/logo.png" alt="ClaimProof" style={{ height: 40, width: "auto", display: "block" }} />
         </Link>
 
-        <div style={{ display: "flex", gap: 2 }}>
+        <div style={{ display: "flex", gap: 4 }}>
           {[{ to: "/dashboard", label: "Policies" }, { to: "/how-it-works", label: "How It Works" }].map(({ to, label }) => (
             <NavLink key={to} to={to} style={({ isActive }) => ({
-              fontFamily: "sans-serif", fontSize: 10, fontWeight: 600,
-              letterSpacing: "0.2em", textTransform: "uppercase",
-              textDecoration: "none", padding: "8px 18px",
-              background: isActive ? C.gold : "transparent",
-              color: isActive ? C.bg : C.muted,
+              fontFamily: "'Work Sans', sans-serif", fontSize: 13, fontWeight: 500,
+              textDecoration: "none", padding: "7px 14px",
+              background: isActive ? LD.goldBg : "transparent",
+              color: isActive ? LD.gold : LD.sub,
               transition: "all 0.15s",
             })}>
               {label}
@@ -233,22 +292,22 @@ function AppNav({ walletAddress, onOpenWallet, onDisconnect }: AppNavProps) {
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 5, height: 5, background: C.gold, animation: "ad-blink 2.4s ease-in-out infinite" }} />
-            <span style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint }}>Testnet</span>
+            <div style={{ width: 6, height: 6, background: "#22c55e", borderRadius: "50%", animation: "ad-blink 2.4s ease-in-out infinite" }} />
+            <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: LD.faint }}>Testnet</span>
           </div>
-          <button onClick={() => navigate("/create")} style={{ ...btnOutline, padding: "9px 18px", fontSize: 9 }}>
-            <Plus size={12} /> New Policy
+          <button onClick={() => navigate("/create")} style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", background: "transparent", color: LD.text, border: `1px solid ${LD.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Plus size={13} /> New Policy
           </button>
           <div style={{ position: "relative" }}>
             {walletAddress ? (
-              <button onClick={() => setShowAccount(s => !s)} style={{ fontFamily: "monospace", fontSize: 12, color: C.gold, border: `1px solid rgba(201,168,76,0.35)`, background: "rgba(201,168,76,0.06)", padding: "8px 14px", cursor: "pointer", borderRadius: 0, display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 5, height: 5, background: C.gold }} />
+              <button onClick={() => setShowAccount(s => !s)} style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.text, border: `1px solid ${LD.border}`, background: LD.surface, padding: "8px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 6, height: 6, background: LD.gold, borderRadius: "50%" }} />
                 {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
               </button>
             ) : (
-              <button onClick={onOpenWallet} style={{ ...btnGold, padding: "9px 20px", fontSize: 10 }}>
+              <button onClick={onOpenWallet} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, padding: "9px 20px", background: LD.text, color: LD.bg, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                 Connect Wallet
               </button>
             )}
@@ -268,166 +327,179 @@ function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh" }}>
+    <div style={{ background: LD.bg, minHeight: "100vh" }}>
       <LandingNav />
 
-      {/* Hero */}
-      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 52px 80px", position: "relative" }}>
-        <div style={{ marginBottom: 36 }}><AdFan size={220} /></div>
+      {/* ── Hero ── */}
+      <section style={{ paddingTop: 112, paddingBottom: 88, paddingLeft: 48, paddingRight: 48 }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
 
-        <div style={{ marginBottom: 28 }}>
-          <span style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.28em", textTransform: "uppercase", color: C.gold }}>
-            Stellar Soroban · Groth16 ZK · Testnet Live
-          </span>
-        </div>
-
-        <h1 className="font-display" style={{ fontSize: "clamp(52px, 8.5vw, 96px)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.015em", marginBottom: 8, color: C.text }}>
-          Trustless<br /><span style={{ color: C.gold, fontStyle: "italic" }}>Insurance.</span>
-        </h1>
-
-        <div style={{ margin: "32px auto", width: 300 }}>
-          <AdRule label="Zero Knowledge" />
-        </div>
-
-        <p style={{ fontFamily: "sans-serif", fontSize: 15, color: C.muted, lineHeight: 1.78, maxWidth: 460, margin: "0 auto 48px" }}>
-          Parametric insurance policies on Stellar Soroban, settled by zero-knowledge proofs.
-          Your oracle value stays private. The payout is mathematically inevitable.
-        </p>
-
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 72 }}>
-          <button onClick={() => navigate("/dashboard")} style={{ ...btnGold, padding: "15px 40px", fontSize: 11 }}>
-            Create a Policy <ArrowRight size={14} />
-          </button>
-          <a href="#how-it-works" style={{ ...btnOutline, padding: "14px 38px", fontSize: 11 }}>
-            How It Works
-          </a>
-        </div>
-
-        {/* Price preview strip */}
-        <div style={{ display: "flex", width: "100%", maxWidth: 660, border: `1px solid ${C.border}` }}>
-          {[["BTC / USD", "$59,934"], ["ETH / USD", "$1,575"], ["XLM / USD", "$0.178"]].map(([label, val], i) => (
-            <div key={label} style={{ flex: 1, padding: "22px 24px", textAlign: "center", borderRight: i < 2 ? `1px solid ${C.border}` : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.24em", textTransform: "uppercase", color: C.muted, marginBottom: 10 }}>
-                <div style={{ width: 5, height: 5, background: C.gold, animation: "ad-blink 2s ease-in-out infinite" }} />
-                {label}
-              </div>
-              <div className="font-display" style={{ fontSize: 26, fontWeight: 700, color: C.gold }}>{val}</div>
+          {/* Left: copy */}
+          <div>
+            <span style={ldLabel}>Stellar Soroban · Groth16 ZK · Testnet Live</span>
+            <h1 style={{ ...ldH, fontSize: "clamp(44px, 5.5vw, 72px)", marginBottom: 22 }}>
+              Trustless<br />
+              <em style={{ fontStyle: "italic", color: LD.gold }}>Insurance.</em>
+            </h1>
+            <p style={{ ...ldBody, maxWidth: 440, marginBottom: 36 }}>
+              Parametric insurance policies on Stellar Soroban, settled by zero-knowledge proofs.
+              Your oracle value stays private. The payout is mathematically inevitable.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 48 }}>
+              <button onClick={() => navigate("/dashboard")} style={ldBtnDark}>
+                Create a Policy <ArrowRight size={14} />
+              </button>
+              <a href="#how-it-works" style={ldBtnOutline}>How It Works</a>
             </div>
-          ))}
+
+            {/* Live price strip */}
+            <div style={{ display: "flex", border: `1px solid ${LD.border}`, borderRadius: 10, overflow: "hidden", background: LD.surface }}>
+              {[["BTC / USD", "$59,934"], ["ETH / USD", "$1,575"], ["XLM / USD", "$0.178"]].map(([label, val], i) => (
+                <div key={label} style={{ flex: 1, padding: "14px 18px", borderRight: i < 2 ? `1px solid ${LD.border}` : "none" }}>
+                  <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: LD.faint, marginBottom: 5, display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ display: "inline-block", width: 5, height: 5, background: LD.gold, borderRadius: "50%", animation: "ad-blink 2s ease-in-out infinite" }} />
+                    {label}
+                  </div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 17, fontWeight: 700, color: LD.text }}>{val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: hero image — blends into bg */}
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <img src="/landing/claimproof1.png" alt="Trustless protection" style={{ width: "110%", maxWidth: 580, height: "auto", display: "block" }} />
+          </div>
         </div>
       </section>
 
-      {/* Trust strip */}
-      <div style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "20px 52px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
+      {/* ── Trust strip ── */}
+      <div style={{ borderTop: `1px solid ${LD.border}`, borderBottom: `1px solid ${LD.border}`, padding: "16px 48px", background: LD.surface }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 36, flexWrap: "wrap" }}>
           {["No Setup Fee", "ZK Verified", "Instant Payout", "Cancel Anytime"].map((item, i, arr) => (
             <React.Fragment key={item}>
-              <span style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: C.muted }}>{item}</span>
-              {i < arr.length - 1 && <div style={{ width: 4, height: 4, background: C.faint, transform: "rotate(45deg)" }} />}
+              <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, fontWeight: 600, color: LD.sub }}>{item}</span>
+              {i < arr.length - 1 && <span style={{ color: LD.border, fontSize: 20, lineHeight: 1 }}>·</span>}
             </React.Fragment>
           ))}
         </div>
       </div>
 
-      {/* Features */}
-      <section id="features" style={{ padding: "96px 52px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ marginBottom: 64 }}>
-            <div style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.28em", textTransform: "uppercase", color: C.gold, marginBottom: 16 }}>Why ClaimProof</div>
-            <h2 className="font-display" style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 700, letterSpacing: "-0.01em", color: C.text, marginBottom: 12 }}>
-              Insurance without <em style={{ fontStyle: "italic", color: C.gold }}>trust.</em>
+      {/* ── Features ── */}
+      <section id="features" style={{ padding: "96px 48px" }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+          <div style={{ maxWidth: 540, marginBottom: 56 }}>
+            <span style={ldLabel}>Why ClaimProof</span>
+            <h2 style={{ ...ldH, fontSize: "clamp(28px, 3.5vw, 44px)" }}>
+              Insurance without <em style={{ fontStyle: "italic", color: LD.gold }}>trust.</em>
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
             {[
               { icon: Shield, title: "No adjusters, ever", desc: "Your payout is decided by math, not a claims team. When the oracle condition hits, the contract pays out. Automatically. Permanently." },
-              { icon: Lock, title: "Your position stays private", desc: "A ZK proof confirms the condition was met without revealing the exact price or your position size on-chain. The oracle value never touches the blockchain." },
-              { icon: Zap, title: "Seconds, not weeks", desc: "Traditional insurance claims take weeks of back-and-forth. ClaimProof settles in a single Stellar transaction, the moment a valid proof is submitted." },
+              { icon: Lock,   title: "Your position stays private", desc: "A ZK proof confirms the condition was met without revealing the exact price or your position size on-chain. The oracle value never touches the blockchain." },
+              { icon: Zap,    title: "Seconds, not weeks", desc: "Traditional insurance claims take weeks of back-and-forth. ClaimProof settles in a single Stellar transaction, the moment a valid proof is submitted." },
             ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="ad-card"
-                style={{ background: C.card, border: `1px solid ${C.border}`, padding: "36px 30px", transition: "border-color 0.2s, transform 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.borderHi; e.currentTarget.style.transform = "translateY(-4px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = ""; }}>
-                <div style={{ color: C.gold, marginBottom: 20 }}><Icon size={28} /></div>
-                <h3 className="font-display" style={{ fontSize: 19, fontWeight: 700, color: C.text, marginBottom: 12, letterSpacing: "-0.01em" }}>{title}</h3>
-                <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted, lineHeight: 1.72 }}>{desc}</p>
+              <div key={title} style={{ background: LD.surface, border: `1px solid ${LD.border}`, borderRadius: 14, padding: "32px 28px", transition: "box-shadow 0.2s, transform 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = ""; }}>
+                <div style={{ width: 46, height: 46, background: LD.goldBg, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                  <Icon size={20} style={{ color: LD.gold }} />
+                </div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 17, fontWeight: 700, color: LD.text, marginBottom: 10, letterSpacing: "-0.01em" }}>{title}</h3>
+                <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, color: LD.sub, lineHeight: 1.72 }}>{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" style={{ padding: "96px 52px", background: "rgba(201,168,76,0.025)", borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ marginBottom: 64, textAlign: "center" }}>
-            <div style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.28em", textTransform: "uppercase", color: C.gold, marginBottom: 16 }}>How It Works</div>
-            <h2 className="font-display" style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 700, letterSpacing: "-0.01em", color: C.text }}>
-              Four steps. <em style={{ fontStyle: "italic", color: C.gold }}>Zero intermediaries.</em>
+      {/* ── "Make sense" — text left + image right ── */}
+      <section style={{ padding: "80px 48px", background: LD.bg, borderTop: `1px solid ${LD.border}`, borderBottom: `1px solid ${LD.border}` }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+          <div>
+            <img src="/landing/claimproof2.png" alt="Trustless coverage" style={{ width: "110%", display: "block" }} />
+          </div>
+          <div>
+            <h2 style={{ ...ldH, fontSize: "clamp(26px, 3vw, 40px)", marginBottom: 18 }}>
+              Make sense of DeFi risk.
+            </h2>
+            <p style={{ ...ldBody, marginBottom: 20 }}>
+              There's a lot to managing crypto exposure — market crashes, volatility spikes, and black swan events.
+              Understanding the importance of downside protection is key. But where do you start?
+              What makes a good parametric policy? ClaimProof can help you hedge with precision.
+            </p>
+            <p style={{ ...ldBody, fontSize: 14, marginBottom: 32 }}>
+              Today, most DeFi hedging tools require complex options strategies or trusted custodians.
+              You won't find tools focused on simple, verifiable, private parametric insurance.
+              ClaimProof pairs cryptographic guarantees with a one-minute setup flow.
+            </p>
+            <button onClick={() => navigate("/dashboard")} style={{ ...ldBtnDark, fontSize: 13 }}>
+              Create a Policy <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section id="how-it-works" style={{ padding: "96px 48px" }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", maxWidth: 520, margin: "0 auto 64px" }}>
+            <span style={ldLabel}>How It Works</span>
+            <h2 style={{ ...ldH, fontSize: "clamp(26px, 3.5vw, 44px)" }}>
+              Four steps. <em style={{ fontStyle: "italic", color: LD.gold }}>Zero intermediaries.</em>
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", border: `1px solid ${C.border}` }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 40 }}>
             {[
-              { n: "I",   icon: Shield, title: "Create Policy",      desc: "Lock USDC collateral in a Soroban smart contract. Set your oracle asset, trigger condition, and payout amount." },
-              { n: "II",  icon: Eye,    title: "Condition Triggers",  desc: "When BTC, ETH, or XLM crosses your defined threshold, the condition is met and the policy becomes claimable." },
-              { n: "III", icon: Cpu,    title: "Generate ZK Proof",   desc: "Your browser runs the Circom circuit. The proof confirms the condition was met without revealing the price on-chain." },
-              { n: "IV",  icon: Zap,    title: "Instant Payout",      desc: "Soroban verifies the Groth16 proof via native BN254 host functions. USDC transfers to your beneficiary immediately." },
-            ].map(({ n, title, desc }, i) => (
-              <div key={n} style={{ padding: "36px 28px", borderLeft: i > 0 ? `1px solid ${C.border}` : "none" }}>
-                <div style={{ width: 44, height: 44, border: `1px solid rgba(201,168,76,0.4)`, background: C.card, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-                  <span style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: C.gold, letterSpacing: "0.05em" }}>{n}</span>
+              { n: "01", icon: Shield, title: "Create Policy",     desc: "Lock USDC collateral in a Soroban smart contract. Set your oracle asset, trigger condition, and payout amount." },
+              { n: "02", icon: Eye,    title: "Condition Triggers", desc: "When BTC, ETH, or XLM crosses your defined threshold, the condition is met and the policy becomes claimable." },
+              { n: "03", icon: Cpu,    title: "Generate ZK Proof",  desc: "Your browser runs the Circom circuit. The proof confirms the condition was met without revealing the price on-chain." },
+              { n: "04", icon: Zap,    title: "Instant Payout",     desc: "Soroban verifies the Groth16 proof via native BN254 host functions. USDC transfers to your beneficiary immediately." },
+            ].map(({ n, icon: Icon, title, desc }) => (
+              <div key={n}>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", color: LD.gold, marginBottom: 16 }}>{n}</div>
+                <div style={{ width: 40, height: 40, background: LD.goldBg, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                  <Icon size={18} style={{ color: LD.gold }} />
                 </div>
-                <h3 className="font-display" style={{ fontSize: 17, fontWeight: 700, color: C.text, marginBottom: 10, letterSpacing: "-0.01em" }}>{title}</h3>
-                <p style={{ fontFamily: "sans-serif", fontSize: 13, color: C.muted, lineHeight: 1.7 }}>{desc}</p>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: LD.text, marginBottom: 8 }}>{title}</h3>
+                <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.sub, lineHeight: 1.72 }}>{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ padding: "112px 52px", display: "flex", justifyContent: "center" }}>
-        <div style={{ maxWidth: 640, width: "100%", border: `1px solid rgba(201,168,76,0.32)`, padding: "72px 60px", textAlign: "center", background: "rgba(201,168,76,0.025)", position: "relative" }}>
-          <div style={{ position: "absolute", inset: 8, border: `1px solid rgba(201,168,76,0.13)`, pointerEvents: "none" }} />
-          {[
-            { top: -1, left: -1, borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 0, borderBottomWidth: 0 },
-            { top: -1, right: -1, borderTopWidth: 2, borderRightWidth: 2, borderLeftWidth: 0, borderBottomWidth: 0 },
-            { bottom: -1, left: -1, borderBottomWidth: 2, borderLeftWidth: 2, borderTopWidth: 0, borderRightWidth: 0 },
-            { bottom: -1, right: -1, borderBottomWidth: 2, borderRightWidth: 2, borderTopWidth: 0, borderLeftWidth: 0 },
-          ].map((cs, i) => (
-            <div key={i} style={{ position: "absolute", width: 22, height: 22, borderStyle: "solid", borderColor: C.gold, opacity: 0.65, ...cs }} />
-          ))}
-
-          <div style={{ marginBottom: 20 }}><AdFan size={80} /></div>
-          <div style={{ margin: "0 auto 20px", width: 180 }}><AdRule /></div>
-          <div style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.28em", textTransform: "uppercase", color: C.gold, marginBottom: 16 }}>Get Started</div>
-          <h2 className="font-display" style={{ fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 900, color: C.text, letterSpacing: "-0.015em", lineHeight: 1.1, marginBottom: 18 }}>
-            Ready to hedge with <em style={{ fontStyle: "italic", color: C.gold }}>mathematics?</em>
+      {/* ── CTA ── */}
+      <section style={{ padding: "96px 48px", background: LD.text }}>
+        <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
+          <span style={{ ...ldLabel, color: LD.gold }}>Get Started</span>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(28px, 4vw, 48px)", lineHeight: 1.1, color: LD.bg, letterSpacing: "-0.025em", marginBottom: 18 }}>
+            Ready to hedge with <em style={{ fontStyle: "italic", color: LD.gold }}>mathematics?</em>
           </h2>
-          <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted, lineHeight: 1.76, maxWidth: 380, margin: "0 auto 38px" }}>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 15, color: "#A1A1AA", lineHeight: 1.75, marginBottom: 36 }}>
             Create your first policy in under a minute. When the market moves, a proof settles it on Stellar in seconds.
           </p>
-          <button onClick={() => navigate("/dashboard")} style={{ ...btnGold, padding: "15px 40px", fontSize: 11 }}>
+          <button onClick={() => navigate("/dashboard")} style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, fontWeight: 600, padding: "14px 36px", background: LD.gold, color: LD.text, border: "none", cursor: "pointer", borderRadius: 8 }}>
             Create Your First Policy
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ borderTop: `1px solid ${C.border}`, padding: "36px 52px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <AdLogoMark size={18} />
-            <span className="font-display" style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>ClaimProof</span>
+      {/* ── Footer ── */}
+      <footer style={{ borderTop: `1px solid ${LD.border}`, padding: "32px 48px", background: LD.bg }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img src="/logo.png" alt="ClaimProof" style={{ height: 36, width: "auto", display: "block" }} />
           </div>
-          <div style={{ display: "flex", gap: 24 }}>
+          <div style={{ display: "flex", gap: 28 }}>
             {[{ to: "/dashboard", label: "Dashboard" }, { to: "/how-it-works", label: "How It Works" }, { to: "/create", label: "Create Policy" }].map(({ to, label }) => (
-              <Link key={to} to={to} style={{ fontFamily: "sans-serif", fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: C.muted, textDecoration: "none" }}>
+              <Link key={to} to={to} style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.sub, textDecoration: "none" }}>
                 {label}
               </Link>
             ))}
           </div>
-          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>Built on Stellar Protocol 25</p>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint }}>Built on Stellar Protocol 25</p>
         </div>
       </footer>
     </div>
@@ -511,7 +583,7 @@ function DashboardPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps)
   }).length;
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh" }}>
+    <div style={{ background: LD.bg, minHeight: "100vh" }}>
       <AppNav walletAddress={walletAddress} onOpenWallet={onOpenWallet} onDisconnect={onDisconnect} />
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 52px" }}>
 
@@ -521,17 +593,17 @@ function DashboardPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps)
         <ClaimableBanner policies={policies} prices={prices} />
 
         {/* Portfolio stats strip */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, marginBottom: 40, background: C.border, border: `1px solid ${C.border}` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 40 }}>
           {[
-            { label: "Active Policies",    value: String(activePolicies.length),          sub: "currently open" },
-            { label: "Total Protected",    value: `${totalProtected.toFixed(0)} USDC`,   sub: "locked collateral" },
-            { label: "Claimable Now",      value: String(claimableCount),                 sub: claimableCount > 0 ? "conditions triggered" : "none triggered" },
-            { label: "Total Claimed",      value: `${totalClaimed.toFixed(0)} USDC`,     sub: "paid out" },
+            { label: "Active Policies",  value: String(activePolicies.length),        sub: "currently open" },
+            { label: "Total Protected",  value: `${totalProtected.toFixed(0)} USDC`, sub: "locked collateral" },
+            { label: "Claimable Now",    value: String(claimableCount),               sub: claimableCount > 0 ? "conditions triggered" : "none triggered" },
+            { label: "Total Claimed",    value: `${totalClaimed.toFixed(0)} USDC`,   sub: "paid out" },
           ].map(({ label, value, sub }) => (
-            <div key={label} style={{ background: C.card, padding: "24px 24px" }}>
-              <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: C.faint, marginBottom: 8 }}>{label}</div>
-              <div className="font-display" style={{ fontSize: 28, fontWeight: 900, color: C.gold, letterSpacing: "-0.025em", lineHeight: 1.1 }}>{value}</div>
-              <div style={{ fontFamily: "sans-serif", fontSize: 10, color: C.faint, marginTop: 4 }}>{sub}</div>
+            <div key={label} style={{ background: LD.surface, border: `1px solid ${LD.border}`, padding: "22px 24px" }}>
+              <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: LD.faint, marginBottom: 8 }}>{label}</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: LD.gold, letterSpacing: "-0.03em", lineHeight: 1.1 }}>{value}</div>
+              <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, color: LD.faint, marginTop: 4 }}>{sub}</div>
             </div>
           ))}
         </div>
@@ -539,47 +611,47 @@ function DashboardPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps)
         {/* Policies header */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
-            <h2 className="font-display" style={{ fontSize: 28, fontWeight: 700, color: C.text, letterSpacing: "-0.01em", marginBottom: 4 }}>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 800, color: LD.text, letterSpacing: "-0.02em", marginBottom: 4 }}>
               {walletAddress && !showAll ? "Your Policies" : "All Policies"}
             </h2>
             {walletAddress && (
               <button onClick={() => setShowAll(s => !s)}
-                style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "sans-serif", fontSize: 11, color: C.faint, padding: 0, textDecoration: "underline" }}>
+                style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "'Work Sans', sans-serif", fontSize: 12, color: LD.faint, padding: 0, textDecoration: "underline" }}>
                 {showAll ? "Show only mine" : "Show all policies"}
               </button>
             )}
           </div>
-          <button onClick={() => navigate("/create")} style={{ ...btnGold, padding: "12px 24px", fontSize: 10 }}>
-            <Plus size={12} /> New Policy
+          <button onClick={() => navigate("/create")} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, padding: "12px 24px", background: LD.text, color: LD.bg, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+            <Plus size={13} /> New Policy
           </button>
         </div>
 
         {loading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ height: 80, background: C.card, border: `1px solid ${C.border}`, animation: "pulse 2s infinite" }} />
+              <div key={i} style={{ height: 80, background: LD.surface, border: `1px solid ${LD.border}`, animation: "pulse 2s infinite" }} />
             ))}
           </div>
         ) : sorted.length === 0 ? (
-          <div className="ad-card" style={{ background: C.card, border: `1px solid ${C.border}`, padding: "72px 40px", textAlign: "center" }}>
-            <div style={{ color: C.faint, marginBottom: 20, display: "flex", justifyContent: "center" }}>
+          <div style={{ background: LD.surface, border: `1px solid ${LD.border}`, padding: "72px 40px", textAlign: "center" }}>
+            <div style={{ color: LD.faint, marginBottom: 20, display: "flex", justifyContent: "center" }}>
               <FileText size={32} />
             </div>
-            <h3 className="font-display" style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: LD.text, marginBottom: 8 }}>
               {walletAddress ? "No policies for this wallet" : "No policies yet"}
             </h3>
-            <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted, maxWidth: 340, margin: "0 auto 28px" }}>
+            <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, color: LD.sub, maxWidth: 340, margin: "0 auto 28px" }}>
               {walletAddress
                 ? "Create your first policy to start protecting your crypto holdings."
                 : "Connect your wallet and create a policy to protect against price movements."}
             </p>
             <button onClick={() => walletAddress ? navigate("/create") : onOpenWallet()}
-              style={{ ...btnGold, padding: "13px 32px", fontSize: 10 }}>
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, padding: "13px 32px", background: LD.text, color: LD.bg, border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
               {walletAddress ? "Create Policy" : "Connect Wallet"} <ArrowRight size={14} />
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", flexDirection: "column", borderBottom: `1px solid ${LD.border}` }}>
             {sorted.map(p => (
               <PolicyCard
                 key={p._id}
@@ -601,25 +673,23 @@ function DashboardPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps)
 function CreatePolicyPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps) {
   const navigate = useNavigate();
   return (
-    <div style={{ background: C.bg, minHeight: "100vh" }}>
+    <div style={{ background: LD.bg, minHeight: "100vh" }}>
       <AppNav walletAddress={walletAddress} onOpenWallet={onOpenWallet} onDisconnect={onDisconnect} />
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 52px" }}>
+      <div style={{ maxWidth: 700, margin: "0 auto", padding: "48px 52px" }}>
         <div style={{ marginBottom: 36 }}>
-          <div style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.28em", textTransform: "uppercase", color: C.gold, marginBottom: 16 }}>New Policy</div>
-          <h1 className="font-display" style={{ fontSize: 38, fontWeight: 700, color: C.text, letterSpacing: "-0.015em", marginBottom: 10 }}>
+          <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.gold }}>New Policy</span>
+          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 38, fontWeight: 800, color: LD.text, letterSpacing: "-0.025em", marginTop: 10, marginBottom: 10 }}>
             Create Insurance Policy
           </h1>
-          <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted }}>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 15, color: LD.sub, lineHeight: 1.6 }}>
             Lock USDC as collateral. When the oracle condition triggers, claim instantly with a ZK proof.
           </p>
         </div>
-        <div className="ad-card" style={{ background: C.card, border: `1px solid ${C.border}`, padding: 40 }}>
-          <CreatePolicy
-            onCreated={() => setTimeout(() => navigate("/dashboard"), 2500)}
-            walletAddress={walletAddress}
-            onOpenWallet={onOpenWallet}
-          />
-        </div>
+        <CreatePolicy
+          onCreated={() => setTimeout(() => navigate("/dashboard"), 2500)}
+          walletAddress={walletAddress}
+          onOpenWallet={onOpenWallet}
+        />
       </div>
     </div>
   );
@@ -638,54 +708,54 @@ function HowItWorksPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps
   ];
 
   return (
-    <div style={{ background: C.bg, minHeight: "100vh" }}>
+    <div style={{ background: LD.bg, minHeight: "100vh" }}>
       <AppNav walletAddress={walletAddress} onOpenWallet={onOpenWallet} onDisconnect={onDisconnect} />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "56px 52px" }}>
         <div style={{ marginBottom: 56 }}>
-          <div style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.28em", textTransform: "uppercase", color: C.gold, marginBottom: 16 }}>Documentation</div>
-          <h1 className="font-display" style={{ fontSize: 48, fontWeight: 700, color: C.text, letterSpacing: "-0.02em", lineHeight: 1.05, marginBottom: 16 }}>
+          <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.gold }}>Documentation</span>
+          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 48, fontWeight: 800, color: LD.text, letterSpacing: "-0.03em", lineHeight: 1.05, marginTop: 10, marginBottom: 16 }}>
             How ClaimProof Works
           </h1>
-          <p style={{ fontFamily: "sans-serif", fontSize: 15, color: C.muted, maxWidth: 460 }}>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 16, color: LD.sub, maxWidth: 480, lineHeight: 1.65 }}>
             Trustless parametric insurance powered by zero-knowledge proofs on Stellar Soroban.
           </p>
         </div>
 
         <div style={{ marginBottom: 56 }}>
           {[
-            { n: "I",   icon: Shield, title: "Create and fund a policy",  desc: "Lock USDC collateral in a Soroban smart contract. Set your oracle asset, trigger condition, and payout amount. The contract holds the funds until the condition is met or the policy expires." },
-            { n: "II",  icon: Eye,    title: "Oracle condition triggers",  desc: "When BTC, ETH, or XLM crosses your defined threshold, the insurance condition is met and you can initiate a claim. The oracle reading is fetched from the Reflector Network." },
-            { n: "III", icon: Cpu,    title: "Generate a ZK proof",        desc: "Your browser runs the Circom circuit via snarkjs. The proof confirms the oracle condition was met without revealing the exact price on-chain. This takes under 2 seconds." },
-            { n: "IV",  icon: Zap,    title: "Instant payout on Stellar",  desc: "The ClaimProof contract verifies your Groth16 proof using Stellar Protocol 25 native BN254 host functions. Once valid, USDC transfers in seconds. No intermediary, no wait." },
+            { n: "01", icon: Shield, title: "Create and fund a policy",  desc: "Lock USDC collateral in a Soroban smart contract. Set your oracle asset, trigger condition, and payout amount. The contract holds the funds until the condition is met or the policy expires." },
+            { n: "02", icon: Eye,    title: "Oracle condition triggers",  desc: "When BTC, ETH, or XLM crosses your defined threshold, the insurance condition is met and you can initiate a claim. The oracle reading is fetched from the Reflector Network." },
+            { n: "03", icon: Cpu,    title: "Generate a ZK proof",        desc: "Your browser runs the Circom circuit via snarkjs. The proof confirms the oracle condition was met without revealing the exact price on-chain. This takes under 2 seconds." },
+            { n: "04", icon: Zap,    title: "Instant payout on Stellar",  desc: "The ClaimProof contract verifies your Groth16 proof using Stellar Protocol 25 native BN254 host functions. Once valid, USDC transfers in seconds. No intermediary, no wait." },
           ].map(({ n, title, desc }, i) => (
-            <div key={n} style={{ display: "flex", gap: 28, padding: "36px 0", borderBottom: i < 3 ? `1px solid ${C.border}` : "none" }}>
-              <div style={{ width: 44, height: 44, border: `1px solid rgba(201,168,76,0.4)`, background: C.card, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: C.gold, letterSpacing: "0.05em" }}>{n}</span>
+            <div key={n} style={{ display: "flex", gap: 32, padding: "36px 0", borderBottom: i < 3 ? `1px solid ${LD.border}` : "none" }}>
+              <div style={{ width: 48, height: 48, background: LD.goldBg, border: `1px solid rgba(201,168,76,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12, fontWeight: 800, color: LD.gold }}>{n}</span>
               </div>
-              <div style={{ flex: 1, paddingTop: 4 }}>
-                <h3 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 10, letterSpacing: "-0.01em" }}>{title}</h3>
-                <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted, lineHeight: 1.72 }}>{desc}</p>
+              <div style={{ flex: 1, paddingTop: 6 }}>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: LD.text, marginBottom: 10 }}>{title}</h3>
+                <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 15, color: LD.sub, lineHeight: 1.72 }}>{desc}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <h2 className="font-display" style={{ fontSize: 26, fontWeight: 700, color: C.text, marginBottom: 20 }}>Technical Stack</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1, marginBottom: 48, background: C.border, border: `1px solid ${C.border}` }}>
+        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 800, color: LD.text, marginBottom: 20 }}>Technical Stack</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 48 }}>
           {stack.map(({ label, value }) => (
-            <div key={label} style={{ background: C.card, padding: "20px 24px" }}>
-              <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>{label}</div>
-              <div style={{ fontFamily: "sans-serif", fontSize: 14, color: C.text }}>{value}</div>
+            <div key={label} style={{ background: LD.surface, border: `1px solid ${LD.border}`, padding: "20px 24px" }}>
+              <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: LD.faint, marginBottom: 6 }}>{label}</div>
+              <div style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, fontWeight: 500, color: LD.text }}>{value}</div>
             </div>
           ))}
         </div>
 
-        <div className="ad-card" style={{ background: C.card, border: `1px solid ${C.border}`, padding: "36px 36px" }}>
+        <div style={{ background: LD.surface, border: `1px solid ${LD.border}`, padding: "36px 36px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
-            <div style={{ color: C.gold, flexShrink: 0, marginTop: 2 }}><Lock size={22} /></div>
-            <h3 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: C.text }}>Why zero-knowledge proofs?</h3>
+            <div style={{ color: LD.gold, flexShrink: 0, marginTop: 2 }}><Lock size={22} /></div>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: LD.text }}>Why zero-knowledge proofs?</h3>
           </div>
-          <p style={{ fontFamily: "sans-serif", fontSize: 14, color: C.muted, lineHeight: 1.75, marginBottom: 20 }}>
+          <p style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 14, color: LD.sub, lineHeight: 1.8, marginBottom: 20 }}>
             Traditional parametric insurance requires publishing oracle data publicly, exposing your financial position on-chain.
             With ZK proofs, you confirm a loss occurred without revealing the exact oracle reading. A fund manager proving a price
             hit their stop-loss does not leak their position size or entry price. The Soroban contract sees one thing: proof valid, transfer USDC.
@@ -696,8 +766,8 @@ function HowItWorksPage({ walletAddress, onOpenWallet, onDisconnect }: PageProps
             "Groth16 verification costs under 2 seconds in-browser via snarkjs",
           ].map(line => (
             <div key={line} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <CheckCircle2 size={14} style={{ color: C.gold, flexShrink: 0 }} />
-              <span style={{ fontFamily: "sans-serif", fontSize: 13, color: C.muted }}>{line}</span>
+              <CheckCircle2 size={14} style={{ color: LD.gold, flexShrink: 0 }} />
+              <span style={{ fontFamily: "'Work Sans', sans-serif", fontSize: 13, color: LD.sub }}>{line}</span>
             </div>
           ))}
         </div>
