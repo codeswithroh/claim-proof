@@ -190,10 +190,10 @@ const ldBtnOutline: React.CSSProperties = {
 function LandingNav() {
   const navigate = useNavigate();
   return (
-    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(250,250,248,0.92)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${LD.border}` }}>
+    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: LD.bg, borderBottom: `1px solid ${LD.border}` }}>
       <div style={{ maxWidth: 1140, margin: "0 auto", padding: "0 48px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="/logo.png" alt="ClaimProof" style={{ height: 40, width: "auto", display: "block" }} />
+          <img src="/logo.png" alt="ClaimProof" style={{ height: 67, width: "auto", display: "block" }} />
         </div>
         <div style={{ display: "flex", gap: 32 }}>
           {[["#how-it-works", "How It Works"], ["#features", "Features"]].map(([href, label]) => (
@@ -272,10 +272,10 @@ function AppNav({ walletAddress, onOpenWallet, onDisconnect }: AppNavProps) {
   const [showAccount, setShowAccount] = useState(false);
 
   return (
-    <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(253,247,244,0.92)", backdropFilter: "blur(14px)", borderBottom: `1px solid ${LD.border}` }}>
+    <nav style={{ position: "sticky", top: 0, zIndex: 50, background: LD.bg, borderBottom: `1px solid ${LD.border}` }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 52px", height: 66, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <img src="/logo.png" alt="ClaimProof" style={{ height: 40, width: "auto", display: "block" }} />
+          <img src="/logo.png" alt="ClaimProof" style={{ height: 67, width: "auto", display: "block" }} />
         </Link>
 
         <div style={{ display: "flex", gap: 4 }}>
@@ -336,7 +336,6 @@ function LandingPage() {
 
           {/* Left: copy */}
           <div>
-            <span style={ldLabel}>Stellar Soroban · Groth16 ZK · Testnet Live</span>
             <h1 style={{ ...ldH, fontSize: "clamp(44px, 5.5vw, 72px)", marginBottom: 22 }}>
               Trustless<br />
               <em style={{ fontStyle: "italic", color: LD.gold }}>Insurance.</em>
@@ -490,7 +489,7 @@ function LandingPage() {
       <footer style={{ borderTop: `1px solid ${LD.border}`, padding: "32px 48px", background: LD.bg }}>
         <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/logo.png" alt="ClaimProof" style={{ height: 36, width: "auto", display: "block" }} />
+            <img src="/logo.png" alt="ClaimProof" style={{ height: 67, width: "auto", display: "block" }} />
           </div>
           <div style={{ display: "flex", gap: 28 }}>
             {[{ to: "/dashboard", label: "Dashboard" }, { to: "/how-it-works", label: "How It Works" }, { to: "/create", label: "Create Policy" }].map(({ to, label }) => (
