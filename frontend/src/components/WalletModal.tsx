@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { X, ExternalLink, Loader2, AlertCircle } from "lucide-react";
 
 const C = {
-  bg: "#f5f4ef",
-  card: "#ffffff",
-  text: "#141414",
-  muted: "#878680",
-  faint: "#b0afa9",
-  border: "#e5e4df",
+  bg:     "#0d0b06",
+  card:   "#1a1610",
+  card2:  "#221e14",
+  text:   "#f0e6c8",
+  gold:   "#c9a84c",
+  muted:  "#a89060",
+  faint:  "#6e5c3a",
+  border: "rgba(201,168,76,0.22)",
 };
 
 // ── Wallet definitions ────────────────────────────────────────────────────────
@@ -17,11 +19,9 @@ interface WalletDef {
   name: string;
   desc: string;
   logo: string;
-  /** Sync or async — returns true if the wallet is installed/available */
   detect: () => boolean | Promise<boolean>;
   connect: () => Promise<string>;
   installUrl: string;
-  /** Always show as Available regardless of detection (e.g. web-based) */
   alwaysAvailable?: boolean;
 }
 
@@ -31,10 +31,6 @@ const WALLETS: WalletDef[] = [
     name: "Freighter",
     desc: "Official SDF wallet",
     logo: "/wallets/freighter.png",
-    // Freighter v5+ (Manifest V3) no longer injects window.freighter.
-    // It uses a postMessage bridge — content script listens for FREIGHTER_EXTERNAL_MSG_REQUEST
-    // and replies with FREIGHTER_EXTERNAL_MSG_RESPONSE. Detection pings REQUEST_CONNECTION_STATUS
-    // with a short timeout; silence means not installed.
     detect: () =>
       new Promise<boolean>((resolve) => {
         const messageId = Math.floor(Math.random() * 1e9);
@@ -54,8 +50,6 @@ const WALLETS: WalletDef[] = [
         );
       }),
     connect: async () => {
-      // Sends a message through the postMessage bridge and resolves with the full response.
-      // Note: Freighter's content script has a typo — response field is "messagedId" not "messageId".
       const send = (type: string) =>
         new Promise<any>((resolve, reject) => {
           const messageId = Math.floor(Math.random() * 1e9);
@@ -77,11 +71,8 @@ const WALLETS: WalletDef[] = [
             window.location.origin
           );
         });
-
-      // REQUEST_ACCESS opens the approval popup; response contains publicKey on approval.
       const access = await send("REQUEST_ACCESS");
       if (access.publicKey) return access.publicKey;
-      // Fallback: fetch explicitly
       const key = await send("REQUEST_PUBLIC_KEY");
       if (!key.publicKey) throw new Error("Freighter did not return a public key.");
       return key.publicKey;
@@ -134,20 +125,12 @@ const WALLETS: WalletDef[] = [
     detect: () => true,
     alwaysAvailable: true,
     connect: async () => {
-      // Albedo uses a popup + postMessage.
-      // Token prevents replay attacks; response field is `pubkey` (not `public_key`).
       const token = Math.random().toString(36).slice(2);
       const url = `https://albedo.link/intent/public_key?token=${token}&callback=postMessage`;
-
       return new Promise<string>((resolve, reject) => {
         const popup = window.open(url, "albedo", "width=480,height=560,left=400,top=200");
-        if (!popup) {
-          reject(new Error("Popup was blocked. Allow popups for this site and try again."));
-          return;
-        }
-
+        if (!popup) { reject(new Error("Popup was blocked. Allow popups for this site and try again.")); return; }
         const cleanup = () => window.removeEventListener("message", handler);
-
         const handler = (e: MessageEvent) => {
           if (e.origin !== "https://albedo.link") return;
           cleanup();
@@ -155,24 +138,11 @@ const WALLETS: WalletDef[] = [
           if (pubkey) resolve(pubkey);
           else reject(new Error(error || "Albedo did not return a public key."));
         };
-
         window.addEventListener("message", handler);
-
-        // Poll for closed popup (user dismissed without authorizing)
         const poller = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(poller);
-            cleanup();
-            reject(new Error("Albedo popup was closed before authorizing."));
-          }
+          if (popup.closed) { clearInterval(poller); cleanup(); reject(new Error("Albedo popup was closed before authorizing.")); }
         }, 500);
-
-        // Hard timeout
-        setTimeout(() => {
-          clearInterval(poller);
-          cleanup();
-          reject(new Error("Albedo: timed out waiting for authorization."));
-        }, 120_000);
+        setTimeout(() => { clearInterval(poller); cleanup(); reject(new Error("Albedo: timed out waiting for authorization.")); }, 120_000);
       });
     },
     installUrl: "https://albedo.link/",
@@ -180,16 +150,12 @@ const WALLETS: WalletDef[] = [
 ];
 
 // ── Detection ─────────────────────────────────────────────────────────────────
-// Detection is async: Freighter v5 uses a postMessage round-trip (no window property).
-// Other wallets resolve synchronously. We run all in parallel on modal open, then
-// do one retry after 1 s to catch extensions that inject slightly late.
 
 function useWalletDetection() {
   const [detected, setDetected] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let cancelled = false;
-
     const runDetection = async () => {
       const pairs = await Promise.all(
         WALLETS.map(async (w) => {
@@ -199,19 +165,9 @@ function useWalletDetection() {
       );
       if (!cancelled) setDetected(Object.fromEntries(pairs));
     };
-
-    // First pass immediately
     runDetection();
-
-    // Second pass after 1 s for extensions that inject slightly late
-    const retryTimer = setTimeout(() => {
-      if (!cancelled) runDetection();
-    }, 1000);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(retryTimer);
-    };
+    const retryTimer = setTimeout(() => { if (!cancelled) runDetection(); }, 1000);
+    return () => { cancelled = true; clearTimeout(retryTimer); };
   }, []);
 
   return detected;
@@ -219,11 +175,7 @@ function useWalletDetection() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-interface Props {
-  onConnected: (address: string, walletId: string) => void;
-  onClose: () => void;
-}
-
+interface Props { onConnected: (address: string, walletId: string) => void; onClose: () => void; }
 type ConnectState = "idle" | "connecting" | "error";
 
 export default function WalletModal({ onConnected, onClose }: Props) {
@@ -232,7 +184,6 @@ export default function WalletModal({ onConnected, onClose }: Props) {
   const [connectState, setConnectState] = useState<ConnectState>("idle");
   const [error, setError] = useState("");
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -253,101 +204,60 @@ export default function WalletModal({ onConnected, onClose }: Props) {
     }
   };
 
-  const available = WALLETS.filter((w) => detected[w.id]);
-  const notInstalled = WALLETS.filter((w) => !detected[w.id]);
+  const available    = WALLETS.filter(w => detected[w.id]);
+  const notInstalled = WALLETS.filter(w => !detected[w.id]);
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: "rgba(20,20,20,0.45)", backdropFilter: "blur(4px)" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
-        className="w-full max-w-sm rounded-2xl"
-        style={{ background: C.card, border: `1px solid ${C.border}`, boxShadow: "0 20px 60px rgba(0,0,0,0.18)" }}
-      >
+      <div style={{ width: "100%", maxWidth: 360, background: C.card, border: `1px solid ${C.border}`, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-6 pt-6 pb-4"
-          style={{ borderBottom: `1px solid ${C.border}` }}
-        >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px 18px", borderBottom: `1px solid ${C.border}` }}>
           <div>
-            <h2 className="font-display text-xl font-light" style={{ color: C.text }}>
-              Connect Wallet
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: C.faint }}>
-              Choose a Stellar-compatible wallet
-            </p>
+            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 3 }}>Connect Wallet</h2>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>Choose a Stellar-compatible wallet</p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full"
-            style={{ background: C.bg, color: C.muted }}
-          >
-            <X className="w-4 h-4" />
+          <button onClick={onClose} style={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: C.card2, border: `1px solid ${C.border}`, cursor: "pointer", color: C.muted, borderRadius: 0 }}>
+            <X size={14} />
           </button>
         </div>
 
-        <div className="px-6 py-4">
-          {/* Error banner */}
+        <div style={{ padding: "16px 24px" }}>
           {connectState === "error" && error && (
-            <div
-              className="flex items-start gap-2 rounded-lg px-3 py-2.5 mb-4 text-xs"
-              style={{ background: "rgba(155,28,28,0.06)", border: "1px solid rgba(155,28,28,0.18)", color: "#9b1c1c" }}
-            >
-              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", marginBottom: 16, background: "rgba(252,165,165,0.06)", border: "1px solid rgba(252,165,165,0.2)", color: "#fca5a5", fontFamily: "sans-serif", fontSize: 12 }}>
+              <AlertCircle size={12} style={{ flexShrink: 0, marginTop: 1 }} />
               {error}
             </div>
           )}
 
-          {/* Available wallets */}
           {available.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-medium tracking-wider uppercase mb-3" style={{ color: C.faint }}>
-                Available
-              </p>
-              <div className="space-y-2">
-                {available.map((wallet) => (
-                  <WalletRow
-                    key={wallet.id}
-                    wallet={wallet}
-                    isAvailable
-                    loading={connectingId === wallet.id}
-                    disabled={connectState === "connecting"}
-                    onConnect={() => handleConnect(wallet)}
-                  />
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 10 }}>Available</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {available.map(wallet => (
+                  <WalletRow key={wallet.id} wallet={wallet} isAvailable loading={connectingId === wallet.id} disabled={connectState === "connecting"} onConnect={() => handleConnect(wallet)} />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Not installed */}
           {notInstalled.length > 0 && (
             <div>
-              {available.length > 0 && (
-                <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 16 }} />
-              )}
-              <p className="text-xs font-medium tracking-wider uppercase mb-3" style={{ color: C.faint }}>
-                Not installed
-              </p>
-              <div className="space-y-2">
-                {notInstalled.map((wallet) => (
-                  <WalletRow
-                    key={wallet.id}
-                    wallet={wallet}
-                    isAvailable={false}
-                    loading={false}
-                    disabled={false}
-                    onInstall={() => window.open(wallet.installUrl, "_blank", "noopener")}
-                  />
+              {available.length > 0 && <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 16 }} />}
+              <p style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 10 }}>Not installed</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {notInstalled.map(wallet => (
+                  <WalletRow key={wallet.id} wallet={wallet} isAvailable={false} loading={false} disabled={false} onInstall={() => window.open(wallet.installUrl, "_blank", "noopener")} />
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        <div className="px-6 pb-5 pt-1">
-          <p className="text-xs text-center" style={{ color: C.faint }}>
+        <div style={{ padding: "8px 24px 20px", textAlign: "center" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>
             By connecting you agree to interact with Stellar Testnet only.
           </p>
         </div>
@@ -358,61 +268,32 @@ export default function WalletModal({ onConnected, onClose }: Props) {
 
 // ── Wallet row ────────────────────────────────────────────────────────────────
 
-interface RowProps {
-  wallet: WalletDef;
-  isAvailable: boolean;
-  loading: boolean;
-  disabled: boolean;
-  onConnect?: () => void;
-  onInstall?: () => void;
-}
+interface RowProps { wallet: WalletDef; isAvailable: boolean; loading: boolean; disabled: boolean; onConnect?: () => void; onInstall?: () => void; }
 
 function WalletRow({ wallet, isAvailable, loading, disabled, onConnect, onInstall }: RowProps) {
   return (
-    <div
-      className="flex items-center gap-3 px-4 py-3 rounded-xl transition-opacity"
-      style={{
-        border: `1px solid ${C.border}`,
-        background: isAvailable ? "white" : C.bg,
-        opacity: disabled && !loading ? 0.5 : 1,
-      }}
-    >
-      <div
-        className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden"
-        style={{ background: C.bg }}
-      >
-        <img
-          src={wallet.logo}
-          alt={wallet.name}
-          className="w-full h-full object-contain"
-        />
+    <div style={{
+      display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+      border: `1px solid ${C.border}`,
+      background: isAvailable ? C.card2 : C.bg,
+      opacity: disabled && !loading ? 0.45 : 1,
+    }}>
+      <div style={{ width: 34, height: 34, background: C.bg, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+        <img src={wallet.logo} alt={wallet.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
       </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium" style={{ color: isAvailable ? C.text : C.muted }}>
-          {wallet.name}
-        </div>
-        <div className="text-xs" style={{ color: C.faint }}>{wallet.desc}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: isAvailable ? C.text : C.muted }}>{wallet.name}</div>
+        <div style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint }}>{wallet.desc}</div>
       </div>
-
       {isAvailable ? (
-        <button
-          onClick={onConnect}
-          disabled={disabled}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-opacity hover:opacity-80"
-          style={{ background: C.text, color: "white", flexShrink: 0 }}
-        >
-          {loading ? (
-            <><Loader2 className="w-3 h-3 animate-spin" />Connecting</>
-          ) : "Connect"}
+        <button onClick={onConnect} disabled={disabled}
+          style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "8px 14px", background: C.gold, color: C.bg, border: "none", cursor: disabled ? "not-allowed" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, borderRadius: 0 }}>
+          {loading ? <><Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />Connecting</> : "Connect"}
         </button>
       ) : (
-        <button
-          onClick={onInstall}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-opacity hover:opacity-80"
-          style={{ border: `1px solid ${C.border}`, color: C.muted, background: "white", flexShrink: 0 }}
-        >
-          Get <ExternalLink className="w-3 h-3" />
+        <button onClick={onInstall}
+          style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "7px 12px", background: "transparent", color: C.muted, border: `1px solid ${C.border}`, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, borderRadius: 0 }}>
+          Get <ExternalLink size={10} />
         </button>
       )}
     </div>

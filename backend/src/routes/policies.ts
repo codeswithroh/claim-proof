@@ -92,21 +92,27 @@ router.post("/", async (req: Request, res: Response) => {
       }
     }
 
-    const policy = new Policy({
-      onChainId,
-      insured,
-      beneficiary,
-      token: token ?? config.usdcContractId,
-      payoutAmount,
-      threshold,
-      condition,
-      expiryLedger,
-      oracleType: oracleType ?? "price_btc",
-      oracleUnit: oracleUnit ?? "USD",
-      txHash,
-    });
+    const policy = await Policy.findOneAndUpdate(
+      { onChainId },
+      {
+        $setOnInsert: {
+          onChainId,
+          insured,
+          beneficiary,
+          token: token ?? config.usdcContractId,
+          payoutAmount,
+          threshold,
+          condition,
+          expiryLedger,
+          oracleType: oracleType ?? "price_btc",
+          oracleUnit: oracleUnit ?? "USD",
+          txHash,
+          status: "active",
+        },
+      },
+      { upsert: true, new: true }
+    );
 
-    await policy.save();
     res.json({ success: true, policy });
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: String(err) });

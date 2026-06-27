@@ -1,33 +1,54 @@
 /**
- * Oracle service — fetches current prices.
- * Primary: Binance public API (no auth, no rate limit for simple spot prices).
+ * Oracle service — fetches current prices with 24h history sampling.
+ * Primary: Binance public API.
  * Fallback: CoinGecko free API.
- * In production this would use Reflector Network (Stellar-native oracle).
  */
 
 export type OracleType = "price_btc" | "price_eth" | "price_xlm";
 
-// ── Cache ─────────────────────────────────────────────────────────────────────
-// Single in-memory cache shared across requests — 60s TTL
-const TTL_MS = 60_000;
+// ── Price cache ────────────────────────────────────────────────────────────────
+const TTL_MS = 30_000; // 30s cache
 let cache: { prices: Record<OracleType, bigint>; ts: number } | null = null;
 
-// ── Binance (primary) ─────────────────────────────────────────────────────────
-const BINANCE_SYMBOLS: Record<OracleType, string> = {
-  price_btc: "BTCUSDT",
-  price_eth: "ETHUSDT",
-  price_xlm: "XLMUSDT",
-};
+// ── 24h History (ring buffer, 5-min samples = 288 max) ────────────────────────
+const HISTORY_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const HISTORY_MAX = 288; // 24 hours
 
+interface HistorySample {
+  ts: number;
+  prices: Record<OracleType, string>; // stored as string to survive JSON
+}
+
+const priceHistory: HistorySample[] = [];
+let lastHistorySample = 0;
+
+function recordHistorySample(prices: Record<OracleType, bigint>) {
+  const now = Date.now();
+  if (now - lastHistorySample < HISTORY_INTERVAL_MS) return;
+  lastHistorySample = now;
+  priceHistory.push({
+    ts: now,
+    prices: {
+      price_btc: prices.price_btc.toString(),
+      price_eth: prices.price_eth.toString(),
+      price_xlm: prices.price_xlm.toString(),
+    },
+  });
+  if (priceHistory.length > HISTORY_MAX) priceHistory.shift();
+}
+
+export function getPriceHistory(): HistorySample[] {
+  return [...priceHistory];
+}
+
+// ── Binance (primary) ──────────────────────────────────────────────────────────
 async function fetchFromBinance(): Promise<Record<OracleType, bigint>> {
-  const symbols = JSON.stringify(Object.values(BINANCE_SYMBOLS).map(s => `"${s}"`).join(",").replace(/"/g, '"'));
   const url = `https://api.binance.com/api/v3/ticker/price?symbols=${encodeURIComponent('["BTCUSDT","ETHUSDT","XLMUSDT"]')}`;
   const res = await fetch(url, { headers: { "User-Agent": "ClaimProof/1.0" } });
   if (!res.ok) throw new Error(`Binance error: ${res.status}`);
   const data = (await res.json()) as { symbol: string; price: string }[];
   const map: Record<string, number> = {};
   for (const item of data) map[item.symbol] = parseFloat(item.price);
-
   return {
     price_btc: BigInt(Math.round((map["BTCUSDT"] ?? 0) * 1_000_000)),
     price_eth: BigInt(Math.round((map["ETHUSDT"] ?? 0) * 1_000_000)),
@@ -35,7 +56,45 @@ async function fetchFromBinance(): Promise<Record<OracleType, bigint>> {
   };
 }
 
-// ── CoinGecko (fallback) ──────────────────────────────────────────────────────
+// ── Binance 24h klines for initial history bootstrap ──────────────────────────
+async function bootstrapHistoryFromBinance() {
+  if (priceHistory.length > 10) return; // already have data
+  const symbols: [OracleType, string][] = [
+    ["price_btc", "BTCUSDT"],
+    ["price_eth", "ETHUSDT"],
+    ["price_xlm", "XLMUSDT"],
+  ];
+  try {
+    const allKlines = await Promise.all(
+      symbols.map(async ([, sym]) => {
+        const url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=5m&limit=288`;
+        const res = await fetch(url, { headers: { "User-Agent": "ClaimProof/1.0" } });
+        if (!res.ok) throw new Error(`klines ${sym}: ${res.status}`);
+        return (await res.json()) as [number, ...string[]][];
+      })
+    );
+    const btcKlines = allKlines[0];
+    const ethKlines = allKlines[1];
+    const xlmKlines = allKlines[2];
+    const len = Math.min(btcKlines.length, ethKlines.length, xlmKlines.length);
+    for (let i = 0; i < len; i++) {
+      priceHistory.push({
+        ts: btcKlines[i][0] as number,
+        prices: {
+          price_btc: String(Math.round(parseFloat(btcKlines[i][4]) * 1_000_000)),
+          price_eth: String(Math.round(parseFloat(ethKlines[i][4]) * 1_000_000)),
+          price_xlm: String(Math.round(parseFloat(xlmKlines[i][4]) * 1_000_000)),
+        },
+      });
+    }
+    lastHistorySample = Date.now();
+    console.log(`✓ Bootstrapped ${priceHistory.length} price history samples`);
+  } catch (err) {
+    console.warn("⚠ Could not bootstrap price history from Binance:", err);
+  }
+}
+
+// ── CoinGecko (fallback) ───────────────────────────────────────────────────────
 async function fetchFromCoinGecko(): Promise<Record<OracleType, bigint>> {
   const url =
     "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,stellar&vs_currencies=usd";
@@ -49,9 +108,15 @@ async function fetchFromCoinGecko(): Promise<Record<OracleType, bigint>> {
   };
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
+// ── Public API ─────────────────────────────────────────────────────────────────
+let bootstrapped = false;
 
 export async function getAllPrices(): Promise<Record<OracleType, bigint>> {
+  if (!bootstrapped) {
+    bootstrapped = true;
+    bootstrapHistoryFromBinance().catch(() => {});
+  }
+
   if (cache && Date.now() - cache.ts < TTL_MS) return cache.prices;
 
   let prices: Record<OracleType, bigint>;
@@ -62,6 +127,7 @@ export async function getAllPrices(): Promise<Record<OracleType, bigint>> {
   }
 
   cache = { prices, ts: Date.now() };
+  recordHistorySample(prices);
   return prices;
 }
 
@@ -70,7 +136,6 @@ export async function fetchOracleValue(oracle: OracleType): Promise<bigint> {
   return prices[oracle];
 }
 
-/** Format a scaled price (×1e6) to human-readable USD string. */
 export function formatPrice(scaled: bigint | string): string {
   const val = typeof scaled === "string" ? BigInt(scaled) : scaled;
   const dollars = Number(val) / 1_000_000;

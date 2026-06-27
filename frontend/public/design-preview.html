@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClaimProof — ZK Parametric Insurance on Stellar</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0b06;
+      --bg2:      #131009;
+      --card:     #1a1610;
+      --gold:     #c9a84c;
+      --gold-lt:  #e2c56a;
+      --gold-dk:  #8a6f2e;
+      --cream:    #f0e6c8;
+      --cream-d:  #b8a878;
+      --rule:     rgba(201,168,76,0.28);
+      --border:   rgba(201,168,76,0.22);
+    }
+
+    body {
+      font-family: 'Playfair Display', Georgia, serif;
+      background: var(--bg);
+      color: var(--cream);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .sans { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; }
+
+    /* ── Rule decorations ───────────────────────────── */
+    .rule {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .rule-line { flex: 1; height: 1px; background: var(--gold); opacity: 0.32; }
+    .rule-diamond {
+      width: 7px; height: 7px;
+      background: var(--gold); transform: rotate(45deg); flex-shrink: 0;
+    }
+    .rule-sm { gap: 8px; }
+    .rule-sm .rule-diamond { width: 5px; height: 5px; }
+
+    /* ── Tag ────────────────────────────────────────── */
+    .tag {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ── Buttons ─────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-gold {
+      background: var(--gold); color: #0d0b06;
+      padding: 13px 34px; border: none;
+    }
+    .btn-gold:hover { background: var(--gold-lt); transform: translateY(-1px); }
+    .btn-outline {
+      background: transparent; color: var(--gold);
+      padding: 12px 32px;
+      border: 1px solid rgba(201,168,76,0.45);
+    }
+    .btn-outline:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
+
+    /* ── Nav ─────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 66px;
+      background: rgba(13,11,6,0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 52px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); text-decoration: none;
+    }
+    .nav-links {
+      display: flex; gap: 36px; list-style: none;
+    }
+    .nav-links a {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--cream-d); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .wallet-chip {
+      font-family: monospace; font-size: 12px;
+      color: var(--cream-d); padding: 6px 14px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .w-dot {
+      width: 6px; height: 6px; background: var(--gold);
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.25; } }
+
+    /* ── Layout ─────────────────────────────────────── */
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 52px; }
+    section { padding: 96px 0; }
+
+    /* ── Hero ────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 52px 80px;
+      position: relative; overflow: hidden;
+    }
+
+    .hero-fan {
+      margin-bottom: 36px;
+      animation: fan-pulse 5s ease-in-out infinite alternate;
+    }
+    @keyframes fan-pulse { from { opacity:0.65; } to { opacity:1; } }
+
+    .hero-eyebrow { margin-bottom: 28px; }
+
+    .hero-title {
+      font-size: clamp(52px, 8.5vw, 100px);
+      font-weight: 900; line-height: 0.95;
+      letter-spacing: -0.015em;
+      margin-bottom: 8px; color: var(--cream);
+    }
+    .hero-title-gold { color: var(--gold); font-style: italic; display: block; }
+
+    .hero-rule { width: 300px; margin: 32px auto; }
+
+    .hero-sub {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px; font-weight: 400;
+      color: var(--cream-d); line-height: 1.78;
+      max-width: 460px; margin: 0 auto 48px;
+    }
+
+    .hero-btns {
+      display: flex; gap: 14px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 72px;
+    }
+    .hero-btns .btn { padding: 15px 40px; font-size: 11px; }
+
+    /* ── Oracle price panels ────────────────────────── */
+    .price-panels {
+      display: flex; width: 100%; max-width: 660px;
+      border: 1px solid var(--border);
+    }
+    .pp {
+      flex: 1; padding: 22px 24px; text-align: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .pp:last-child { border-right: none; }
+    .pp-label {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--cream-d); margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .pp-dot { width: 5px; height: 5px; background: var(--gold); animation: blink 2s ease-in-out infinite; }
+    .pp-val { font-size: 26px; font-weight: 700; color: var(--gold); letter-spacing: -0.01em; margin-bottom: 5px; }
+    .pp-chg {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px; font-weight: 500;
+    }
+    .up { color: #6ee7b7; } .down { color: #fca5a5; }
+
+    /* ── Section headings ────────────────────────────── */
+    .sec-hd { text-align: center; margin-bottom: 60px; }
+    .sec-hd .tag { display: block; margin-bottom: 16px; }
+    .sec-title {
+      font-size: clamp(32px, 4.5vw, 52px); font-weight: 700;
+      letter-spacing: -0.01em; line-height: 1.05;
+      margin-bottom: 12px; color: var(--cream);
+    }
+    .sec-title em { font-style: italic; color: var(--gold); }
+    .sec-sub {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px; color: var(--cream-d);
+      line-height: 1.74; max-width: 420px; margin: 0 auto;
+    }
+    .sec-rule { width: 200px; margin: 24px auto 0; }
+
+    /* ── Steps ───────────────────────────────────────── */
+    .steps { position: relative; padding-left: 76px; }
+    .steps-spine {
+      position: absolute; left: 20px; top: 24px; bottom: 24px; width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--gold) 15%, var(--gold) 85%, transparent);
+      opacity: 0.28;
+    }
+
+    .step { display: flex; gap: 36px; align-items: flex-start; margin-bottom: 56px; }
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border: 1px solid rgba(201,168,76,0.4);
+      background: var(--card);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; margin-top: 2px;
+    }
+    .step-num::before, .step-num::after {
+      content: ''; position: absolute;
+      width: 10px; height: 10px;
+      border-style: solid; border-color: var(--gold); opacity: 0.6;
+    }
+    .step-num::before { top: -4px; left: -4px; border-width: 1px 0 0 1px; }
+    .step-num::after  { bottom: -4px; right: -4px; border-width: 0 1px 1px 0; }
+    .step-num span {
+      font-size: 11px; font-weight: 700;
+      color: var(--gold); font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      letter-spacing: 0.05em;
+    }
+
+    .step-body { padding-top: 4px; }
+    .step-title { font-size: 19px; font-weight: 700; color: var(--cream); margin-bottom: 10px; letter-spacing: -0.01em; }
+    .step-desc {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px; color: var(--cream-d); line-height: 1.72;
+    }
+
+    /* ── Features ────────────────────────────────────── */
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .feat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 36px 30px; position: relative;
+      transition: border-color 0.22s, transform 0.22s;
+    }
+    .feat:hover { border-color: rgba(201,168,76,0.5); transform: translateY(-4px); }
+    .feat::before, .feat::after {
+      content: ''; position: absolute;
+      width: 16px; height: 16px;
+      border-style: solid; border-color: var(--gold); opacity: 0.5;
+    }
+    .feat::before { top:  5px; left:  5px; border-width: 1px 0 0 1px; }
+    .feat::after  { bottom: 5px; right: 5px; border-width: 0 1px 1px 0; }
+
+    .feat-icon { color: var(--gold); margin-bottom: 20px; }
+    .feat-title { font-size: 18px; font-weight: 700; color: var(--cream); margin-bottom: 12px; letter-spacing: -0.01em; }
+    .feat-desc {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px; color: var(--cream-d); line-height: 1.72;
+    }
+
+    /* ── Policy list ──────────────────────────────────── */
+    .policy-list { display: flex; flex-direction: column; }
+    .policy-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 20px 26px;
+      background: var(--card); border: 1px solid var(--border);
+      border-bottom: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .policy-row:last-child { border-bottom: 1px solid var(--border); }
+    .policy-row:hover { background: rgba(201,168,76,0.04); border-color: rgba(201,168,76,0.38); }
+
+    .pr-left { display: flex; align-items: center; gap: 18px; }
+    .pr-mark {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border: 1px solid rgba(201,168,76,0.32);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pr-oracle { font-size: 15px; font-weight: 700; color: var(--cream); margin-bottom: 3px; }
+    .pr-cond {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 12px; color: var(--cream-d);
+    }
+    .pr-right { display: flex; align-items: center; gap: 22px; }
+    .pr-amount { font-size: 15px; font-weight: 700; color: var(--gold); }
+    .pr-lbl {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px; color: var(--cream-d); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .status {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 9px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+      padding: 5px 12px;
+    }
+    .s-active { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: var(--gold); }
+    .s-claimed { background: rgba(110,231,183,0.08); border: 1px solid rgba(110,231,183,0.25); color: #6ee7b7; }
+
+    /* ── Stats strip ─────────────────────────────────── */
+    .stats-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border); background: var(--border);
+      gap: 1px;
+    }
+    .stat {
+      background: var(--card); padding: 36px 28px; text-align: center;
+    }
+    .stat-val {
+      font-size: 40px; font-weight: 900;
+      color: var(--gold); letter-spacing: -0.025em; margin-bottom: 8px;
+    }
+    .stat-lbl {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--cream-d);
+    }
+
+    /* ── CTA ────────────────────────────────────────── */
+    .cta-wrap { padding: 112px 52px; display: flex; justify-content: center; }
+    .cta-frame {
+      max-width: 640px; width: 100%;
+      border: 1px solid rgba(201,168,76,0.32);
+      padding: 72px 60px; text-align: center;
+      background: rgba(201,168,76,0.025);
+      position: relative;
+    }
+    .cta-frame::before {
+      content: ''; position: absolute; inset: 8px;
+      border: 1px solid rgba(201,168,76,0.13); pointer-events: none;
+    }
+    .cta-corner {
+      position: absolute; width: 22px; height: 22px;
+      border-style: solid; border-color: var(--gold); opacity: 0.65;
+    }
+    .cc-tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .cc-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+    .cc-bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+    .cc-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    .cta-fan { margin-bottom: 24px; }
+    .cta-rule { width: 180px; margin: 20px auto 20px; }
+    .cta-tag { margin-bottom: 16px; }
+    .cta-title {
+      font-size: clamp(28px, 4vw, 42px); font-weight: 900;
+      color: var(--cream); letter-spacing: -0.015em;
+      line-height: 1.08; margin-bottom: 18px;
+    }
+    .cta-title em { font-style: italic; color: var(--gold); }
+    .cta-sub {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px; color: var(--cream-d); line-height: 1.76;
+      max-width: 380px; margin: 0 auto 38px;
+    }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .cta-btns .btn { padding: 15px 38px; font-size: 11px; }
+
+    /* ── Footer ──────────────────────────────────────── */
+    .footer-rule { border-top: 1px solid var(--border); }
+    footer {
+      max-width: 1100px; margin: 0 auto; padding: 36px 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); display: flex; align-items: center; gap: 10px;
+    }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--cream-d); text-decoration: none; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-note {
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px; color: var(--cream-d); opacity: 0.6;
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 100px 20px 60px; }
+      .wrap { padding: 0 20px; }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .price-panels { flex-direction: column; }
+      .pp { border-right: none; border-bottom: 1px solid var(--border); }
+      .pp:last-child { border-bottom: none; }
+      .cta-wrap { padding: 72px 20px; }
+      .cta-frame { padding: 48px 28px; }
+      footer { padding: 32px 20px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <polygon points="11,1 21,11 11,21 1,11" stroke="#c9a84c" stroke-width="1.4" fill="none"/>
+      <polygon points="11,5 17,11 11,17 5,11" stroke="#c9a84c" stroke-width="1" fill="none" opacity="0.45"/>
+      <rect x="9.5" y="9.5" width="3" height="3" fill="#c9a84c"/>
+    </svg>
+    ClaimProof
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Dashboard</a></li>
+    <li><a href="#">Create Policy</a></li>
+    <li><a href="#">How It Works</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="wallet-chip"><div class="w-dot"></div>GAXT…Y5NO</div>
+    <a href="#" class="btn btn-gold">Launch App</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <!-- Art Deco fan/sunburst -->
+  <div class="hero-fan">
+    <svg width="240" height="120" viewBox="0 0 240 120" fill="none">
+      <g opacity="0.7">
+        <!-- Primary rays -->
+        <line x1="120" y1="120" x2="120" y2="0"   stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="120" y1="120" x2="0"   y2="58"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="120" y1="120" x2="240" y2="58"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="120" y1="120" x2="27"  y2="12"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="120" y1="120" x2="213" y2="12"  stroke="#c9a84c" stroke-width="0.8"/>
+        <!-- Secondary rays -->
+        <line x1="120" y1="120" x2="5"   y2="82"  stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="120" y1="120" x2="235" y2="82"  stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="120" y1="120" x2="10"  y2="36"  stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="120" y1="120" x2="230" y2="36"  stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="120" y1="120" x2="60"  y2="3"   stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="120" y1="120" x2="180" y2="3"   stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <!-- Tertiary rays -->
+        <line x1="120" y1="120" x2="44"  y2="5"   stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="196" y2="5"   stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="2"   y2="70"  stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="238" y2="70"  stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="18"  y2="25"  stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="222" y2="25"  stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="78"  y2="2"   stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <line x1="120" y1="120" x2="162" y2="2"   stroke="#c9a84c" stroke-width="0.35" opacity="0.38"/>
+        <!-- Concentric arcs -->
+        <path d="M 8 120 A 112 112 0 0 1 232 120" stroke="#c9a84c" stroke-width="0.8" fill="none" opacity="0.5"/>
+        <path d="M 34 120 A 86 86 0 0 1 206 120"  stroke="#c9a84c" stroke-width="0.6" fill="none" opacity="0.4"/>
+        <path d="M 60 120 A 60 60 0 0 1 180 120"  stroke="#c9a84c" stroke-width="0.5" fill="none" opacity="0.3"/>
+        <path d="M 86 120 A 34 34 0 0 1 154 120"  stroke="#c9a84c" stroke-width="0.5" fill="none" opacity="0.22"/>
+      </g>
+      <!-- Center point -->
+      <circle cx="120" cy="120" r="4.5" fill="#c9a84c" opacity="0.9"/>
+      <circle cx="120" cy="120" r="2"   fill="#0d0b06"/>
+      <circle cx="120" cy="120" r="1"   fill="#c9a84c"/>
+    </svg>
+  </div>
+
+  <div class="hero-eyebrow">
+    <span class="tag">Stellar Soroban · Groth16 ZK · Testnet Live</span>
+  </div>
+
+  <h1 class="hero-title">
+    Trustless<br>
+    <span class="hero-title-gold">Insurance.</span>
+  </h1>
+
+  <div class="hero-rule">
+    <div class="rule">
+      <div class="rule-line"></div>
+      <div class="rule-diamond"></div>
+      <span style="font-family:-apple-system,sans-serif;font-size:9px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dk);white-space:nowrap">Zero Knowledge</span>
+      <div class="rule-diamond"></div>
+      <div class="rule-line"></div>
+    </div>
+  </div>
+
+  <p class="hero-sub sans">
+    Parametric insurance policies on Stellar Soroban, settled by zero-knowledge proofs.
+    The oracle value stays private. The payout is mathematically inevitable.
+  </p>
+
+  <div class="hero-btns">
+    <a href="#" class="btn btn-gold">Create a Policy</a>
+    <a href="#" class="btn btn-outline">How It Works</a>
+  </div>
+
+  <!-- Oracle panels -->
+  <div class="price-panels">
+    <div class="pp">
+      <div class="pp-label"><div class="pp-dot"></div>BTC / USD</div>
+      <div class="pp-val">$59,934</div>
+      <div class="pp-chg down sans">▼ 2.14%</div>
+    </div>
+    <div class="pp">
+      <div class="pp-label"><div class="pp-dot"></div>ETH / USD</div>
+      <div class="pp-val">$1,575</div>
+      <div class="pp-chg up sans">▲ 0.82%</div>
+    </div>
+    <div class="pp">
+      <div class="pp-label"><div class="pp-dot"></div>XLM / USD</div>
+      <div class="pp-val">$0.178</div>
+      <div class="pp-chg down sans">▼ 1.03%</div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats strip -->
+<div class="wrap">
+  <div class="stats-strip">
+    <div class="stat">
+      <div class="stat-val">147</div>
+      <div class="stat-lbl sans">Policies Created</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">89</div>
+      <div class="stat-lbl sans">Proofs Verified</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">$24.8K</div>
+      <div class="stat-lbl sans">USDC Protected</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">100%</div>
+      <div class="stat-lbl sans">Trustless Payouts</div>
+    </div>
+  </div>
+</div>
+
+<!-- How It Works -->
+<section>
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="tag">The Protocol</span>
+      <h2 class="sec-title">Four steps. <em>Zero intermediaries.</em></h2>
+      <p class="sec-sub sans">The oracle value never touches the blockchain. A mathematical proof is all the verification required.</p>
+      <div class="sec-rule"><div class="rule rule-sm"><div class="rule-line"></div><div class="rule-diamond"></div><div class="rule-line"></div></div></div>
+    </div>
+
+    <div class="steps">
+      <div class="steps-spine"></div>
+
+      <div class="step">
+        <div class="step-num"><span>I</span></div>
+        <div class="step-body">
+          <div class="step-title">Lock Collateral</div>
+          <div class="step-desc sans">Deposit USDC into the Soroban smart contract. Funds are locked until the oracle condition triggers or the policy expires — fully automated, zero intermediary required.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>II</span></div>
+        <div class="step-body">
+          <div class="step-title">Condition Triggers</div>
+          <div class="step-desc sans">When the oracle price crosses your threshold — BTC below $50,000, ETH above $3,000 — the policy becomes claimable. The market is your arbiter. The contract your enforcer.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>III</span></div>
+        <div class="step-body">
+          <div class="step-title">Generate ZK Proof</div>
+          <div class="step-desc sans">A Groth16 proof is generated locally in your browser. The oracle value is committed via Poseidon hash — it never leaves your machine. Only the proof travels on-chain.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"><span>IV</span></div>
+        <div class="step-body">
+          <div class="step-title">Collect Payout</div>
+          <div class="step-desc sans">The Soroban contract verifies the proof via native BN254 host functions. USDC transfers to the beneficiary in the same transaction. No approval. No delay. No dispute.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section style="background:rgba(201,168,76,0.025); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div class="sec-hd">
+      <span class="tag">Why ClaimProof</span>
+      <h2 class="sec-title">Insurance without <em>trust.</em></h2>
+      <p class="sec-sub sans">No adjusters, no paperwork, no human discretion. The contract settles or it doesn't.</p>
+      <div class="sec-rule"><div class="rule rule-sm"><div class="rule-line"></div><div class="rule-diamond"></div><div class="rule-line"></div></div></div>
+    </div>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <path d="M15 3L26 8.5V15C26 21.3 21 26.7 15 28C9 26.7 4 21.3 4 15V8.5L15 3Z" stroke="#c9a84c" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M11 15L13.5 17.5L19.5 11.5" stroke="#c9a84c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feat-title">Zero-Knowledge Privacy</div>
+        <div class="feat-desc sans">The exact oracle price at claim time never appears on-chain. A Groth16 proof certifies the condition was met without revealing a single byte of the private oracle reading.</div>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <rect x="5" y="11" width="20" height="15" stroke="#c9a84c" stroke-width="1.4"/>
+            <path d="M11 11V8.5C11 6.6 12.8 5 15 5C17.2 5 19 6.6 19 8.5V11" stroke="#c9a84c" stroke-width="1.4"/>
+            <circle cx="15" cy="18.5" r="3" stroke="#c9a84c" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <div class="feat-title">Fully Trustless</div>
+        <div class="feat-desc sans">No human can override a valid proof, delay a payout, or deny a legitimate claim. The Soroban contract is immutable. The mathematics are incontestable by design.</div>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <circle cx="15" cy="15" r="11" stroke="#c9a84c" stroke-width="1.4"/>
+            <path d="M15 9V15L19 18" stroke="#c9a84c" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feat-title">Instant Settlement</div>
+        <div class="feat-desc sans">Verification and payout occur in a single Stellar transaction. The moment a valid proof is confirmed, the collateral is released to the beneficiary. No waiting period of any kind.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Dashboard -->
+<section>
+  <div class="wrap">
+    <div class="sec-hd" style="display:flex;justify-content:space-between;align-items:flex-end;text-align:left;margin-bottom:40px;">
+      <div>
+        <span class="tag" style="display:block;margin-bottom:12px;">Dashboard</span>
+        <h2 class="sec-title" style="margin-bottom:0;">Active Policies</h2>
+      </div>
+      <a href="#" class="btn btn-gold" style="margin-bottom:4px;">+ New Policy</a>
+    </div>
+
+    <div class="policy-list">
+      <div class="policy-row">
+        <div class="pr-left">
+          <div class="pr-mark">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <polygon points="10,1 19,10 10,19 1,10" stroke="#c9a84c" stroke-width="1.2" fill="none"/>
+              <polygon points="10,5.5 15,10 10,14.5 5,10" fill="#c9a84c" opacity="0.3"/>
+              <rect x="9" y="9" width="2" height="2" fill="#c9a84c"/>
+            </svg>
+          </div>
+          <div>
+            <div class="pr-oracle">BTC / USD</div>
+            <div class="pr-cond sans">Pays when price drops below $50,000.00</div>
+          </div>
+        </div>
+        <div class="pr-right">
+          <div><div class="pr-amount">10.00 USDC</div><div class="pr-lbl sans">Payout</div></div>
+          <div class="status s-active sans">Active</div>
+        </div>
+      </div>
+
+      <div class="policy-row">
+        <div class="pr-left">
+          <div class="pr-mark">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9"  stroke="#c9a84c" stroke-width="1.2"/>
+              <circle cx="10" cy="10" r="5"  stroke="#c9a84c" stroke-width="1.2" opacity="0.45"/>
+              <circle cx="10" cy="10" r="2"  fill="#c9a84c" opacity="0.7"/>
+            </svg>
+          </div>
+          <div>
+            <div class="pr-oracle">ETH / USD</div>
+            <div class="pr-cond sans">Pays when price rises above $3,000.00</div>
+          </div>
+        </div>
+        <div class="pr-right">
+          <div><div class="pr-amount">50.00 USDC</div><div class="pr-lbl sans">Payout</div></div>
+          <div class="status s-active sans">Active</div>
+        </div>
+      </div>
+
+      <div class="policy-row" style="opacity:.5;">
+        <div class="pr-left">
+          <div class="pr-mark">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="2" width="16" height="16" stroke="#c9a84c" stroke-width="1.2"/>
+              <rect x="6" y="6" width="8"  height="8"  stroke="#c9a84c" stroke-width="1.2" opacity="0.45"/>
+              <rect x="9" y="9" width="2"  height="2"  fill="#c9a84c"/>
+            </svg>
+          </div>
+          <div>
+            <div class="pr-oracle">XLM / USD</div>
+            <div class="pr-cond sans">Pays when price drops below $0.10</div>
+          </div>
+        </div>
+        <div class="pr-right">
+          <div><div class="pr-amount">100.00 USDC</div><div class="pr-lbl sans">Payout</div></div>
+          <div class="status s-claimed sans">Claimed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-wrap">
+  <div class="cta-frame">
+    <div class="cta-corner cc-tl"></div>
+    <div class="cta-corner cc-tr"></div>
+    <div class="cta-corner cc-bl"></div>
+    <div class="cta-corner cc-br"></div>
+
+    <!-- Small fan -->
+    <div class="cta-fan">
+      <svg width="80" height="40" viewBox="0 0 80 40" fill="none" opacity="0.65">
+        <line x1="40" y1="40" x2="40" y2="0"  stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="40" y1="40" x2="0"  y2="18" stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="40" y1="40" x2="80" y2="18" stroke="#c9a84c" stroke-width="0.8"/>
+        <line x1="40" y1="40" x2="8"  y2="4"  stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="40" y1="40" x2="72" y2="4"  stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="40" y1="40" x2="2"  y2="30" stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line x1="40" y1="40" x2="78" y2="30" stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <path d="M 2 40 A 38 38 0 0 1 78 40"  stroke="#c9a84c" stroke-width="0.8" fill="none" opacity="0.5"/>
+        <path d="M 14 40 A 26 26 0 0 1 66 40" stroke="#c9a84c" stroke-width="0.5" fill="none" opacity="0.35"/>
+        <circle cx="40" cy="40" r="3.5" fill="#c9a84c" opacity="0.9"/>
+      </svg>
+    </div>
+
+    <div class="cta-rule">
+      <div class="rule rule-sm"><div class="rule-line"></div><div class="rule-diamond"></div><div class="rule-line"></div></div>
+    </div>
+
+    <div class="cta-tag"><span class="tag">Get Started</span></div>
+    <h2 class="cta-title">Ready to hedge with <em>mathematics?</em></h2>
+    <p class="cta-sub sans">
+      Set your condition. Lock your collateral. When the market moves, an 800-byte proof settles it on Stellar in seconds.
+    </p>
+    <div class="cta-btns">
+      <a href="#" class="btn btn-gold">Create Your First Policy</a>
+      <a href="#" class="btn btn-outline">View on Stellar Explorer ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer-rule">
+  <footer>
+    <div class="footer-logo">
+      <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,1 21,11 11,21 1,11" stroke="#c9a84c" stroke-width="1.4" fill="none"/>
+        <rect x="9.5" y="9.5" width="3" height="3" fill="#c9a84c"/>
+      </svg>
+      ClaimProof
+    </div>
+    <ul class="footer-links">
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#">How It Works</a></li>
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">Stellar Expert</a></li>
+    </ul>
+    <p class="footer-note sans">Real-World ZK on Stellar · MIT License</p>
+  </footer>
+</div>
+
+</body>
+</html>

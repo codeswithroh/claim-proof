@@ -27,11 +27,14 @@ export function g1ToBytes64(pt: G1Point): Buffer {
   return buf;
 }
 
-/** snarkjs G2 [[x_c0,x_c1],[y_c0,y_c1]] decimal strings → BytesN<128> */
+/** snarkjs G2 [[x_c1,x_c0],[y_c1,y_c0]] decimal strings → BytesN<128>
+ *  snarkjs stores G2 coords as [c1, c0]; Stellar expects x_c0 || x_c1 || y_c0 || y_c1.
+ */
 export function g2ToBytes128(pt: G2Point): Buffer {
   const buf = Buffer.alloc(128);
   let offset = 0;
-  for (const coord of [pt[0][0], pt[0][1], pt[1][0], pt[1][1]]) {
+  // pt[0][0]=x_c1, pt[0][1]=x_c0 in snarkjs — write c0 first then c1
+  for (const coord of [pt[0][1], pt[0][0], pt[1][1], pt[1][0]]) {
     write32BE(BigInt(coord), buf, offset);
     offset += 32;
   }

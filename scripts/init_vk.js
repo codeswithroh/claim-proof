@@ -44,7 +44,8 @@ function g1ToBytes64(pt) {
 function g2ToBytes128(pt) {
   const buf = Buffer.alloc(128);
   let offset = 0;
-  for (const coord of [pt[0][0], pt[0][1], pt[1][0], pt[1][1]]) {
+  // snarkjs: pt[i] = [c1, c0]; Stellar expects c0 || c1 for each coordinate
+  for (const coord of [pt[0][1], pt[0][0], pt[1][1], pt[1][0]]) {
     write32BE(BigInt(coord), buf, offset);
     offset += 32;
   }

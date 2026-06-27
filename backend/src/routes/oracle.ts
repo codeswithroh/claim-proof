@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { getAllPrices, formatPrice } from "../services/oracle";
+import { getAllPrices, formatPrice, getPriceHistory } from "../services/oracle";
 
 const router = Router();
 
@@ -56,6 +56,12 @@ router.get("/check", async (req: Request, res: Response) => {
   } catch (err: unknown) {
     res.status(500).json({ success: false, error: String(err) });
   }
+});
+
+/** GET /api/oracle/history — 24h price history (5-min samples) */
+router.get("/history", (_req: Request, res: Response) => {
+  const history = getPriceHistory();
+  res.json({ success: true, history });
 });
 
 export default router;

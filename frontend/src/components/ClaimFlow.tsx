@@ -1,12 +1,21 @@
-import React, { useState } from "react";
-import { Lock, Cpu, CheckCircle2, ArrowRight, AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Lock, Cpu, CheckCircle2, ArrowRight, AlertCircle, Loader2, RotateCcw, TrendingDown, TrendingUp } from "lucide-react";
 import { useZkProver } from "../hooks/useZkProver";
+import { useOracle } from "../hooks/useOracle";
 import type { Policy } from "../types";
 
-interface Props {
-  policy: Policy;
-  onClaimed?: () => void;
-}
+const C = {
+  bg:     "#0d0b06",
+  card:   "#1a1610",
+  card2:  "#221e14",
+  text:   "#f0e6c8",
+  gold:   "#c9a84c",
+  muted:  "#a89060",
+  faint:  "#6e5c3a",
+  border: "rgba(201,168,76,0.22)",
+};
+
+interface Props { policy: Policy; onClaimed?: () => void; }
 
 const ORACLE_LABELS: Record<string, string> = {
   price_btc: "BTC/USD",
@@ -16,52 +25,54 @@ const ORACLE_LABELS: Record<string, string> = {
 
 export default function ClaimFlow({ policy, onClaimed }: Props) {
   const { state, generateProof, reset } = useZkProver();
+  const { prices } = useOracle(30_000);
   const [oracleValue, setOracleValue] = useState("");
-  const [error, setError] = useState("");
-  const [claimState, setClaimState] = useState<"idle" | "proven" | "submitting" | "done">("idle");
+  const [error, setError]             = useState("");
+  const [claimState, setClaimState]   = useState<"idle" | "proven" | "submitting" | "done">("idle");
   const [claimTxHash, setClaimTxHash] = useState("");
 
-  const thresholdUsd = (Number(policy.threshold) / 1e6).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
+  useEffect(() => {
+    if (!prices || oracleValue) return;
+    const raw = prices[policy.oracleType as keyof typeof prices]?.raw;
+    if (!raw) return;
+    setOracleValue((Number(raw) / 1_000_000).toFixed(2));
+  }, [prices, policy.oracleType]);
 
-  const conditionLabel =
-    policy.condition === "lte"
-      ? `price falls below ${thresholdUsd}`
-      : `price rises above ${thresholdUsd}`;
+  const liveRaw          = prices?.[policy.oracleType as keyof typeof prices]?.raw;
+  const livePrice        = liveRaw ? Number(liveRaw) / 1_000_000 : null;
+  const threshold        = Number(policy.threshold) / 1_000_000;
+  const liveConditionMet = livePrice !== null &&
+    (policy.condition === "lte" ? livePrice <= threshold : livePrice >= threshold);
+
+  const thresholdUsd   = (Number(policy.threshold) / 1e6).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  const conditionLabel = policy.condition === "lte"
+    ? `price falls below ${thresholdUsd}`
+    : `price rises above ${thresholdUsd}`;
 
   const handleGenerateProof = async () => {
     setError("");
     try {
       const oracleScaled = BigInt(Math.round(parseFloat(oracleValue) * 1_000_000));
-      const threshold = BigInt(policy.threshold);
-      const idBytes = Uint8Array.from(
+      const thr          = BigInt(policy.threshold);
+      const idBytes      = Uint8Array.from(
         (policy.onChainId.replace("0x", "").match(/.{2}/g) ?? []).map((h: string) => parseInt(h, 16))
       );
       idBytes[0] &= 0x1f;
       const policyIdBigInt = idBytes.reduce((acc, b) => (acc << 8n) | BigInt(b), 0n);
-      const salt = BigInt(Math.floor(Math.random() * 1e15));
+      const salt           = BigInt(Math.floor(Math.random() * 1e15));
 
       const result = await generateProof({
-        oracleValue: oracleScaled,
-        salt,
-        threshold,
-        policyId: policyIdBigInt,
-        conditionType: policy.condition === "lte" ? 0 : 1,
+        oracleValue: oracleScaled, salt, threshold: thr,
+        policyId: policyIdBigInt, conditionType: policy.condition === "lte" ? 0 : 1,
       });
 
-      // publicSignals[0] = triggered; 0 means the condition was not met
       if (result.publicSignals[0] !== "1") {
         reset();
-        setError(
-          policy.condition === "lte"
-            ? `Condition not met. The value $${parseFloat(oracleValue).toLocaleString()} is above the threshold ${thresholdUsd}. A claim is only valid when the condition is triggered.`
-            : `Condition not met. The value $${parseFloat(oracleValue).toLocaleString()} is below the threshold ${thresholdUsd}. A claim is only valid when the condition is triggered.`
-        );
+        setError(policy.condition === "lte"
+          ? `Condition not met. The value $${parseFloat(oracleValue).toLocaleString()} is above the threshold ${thresholdUsd}.`
+          : `Condition not met. The value $${parseFloat(oracleValue).toLocaleString()} is below the threshold ${thresholdUsd}.`);
         return;
       }
-
       setClaimState("proven");
     } catch (err) {
       setError(String(err));
@@ -76,10 +87,7 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
       const res = await fetch(`/api/policies/${policy.onChainId}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          proof: state.result.proof,
-          publicSignals: state.result.publicSignals,
-        }),
+        body: JSON.stringify({ proof: state.result.proof, publicSignals: state.result.publicSignals }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -92,33 +100,22 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
     }
   };
 
+  // ── Done ──────────────────────────────────────────────────────────────────
   if (claimState === "done") {
     return (
-      <div className="text-center py-10">
-        <div
-          className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-          style={{ background: "rgba(45,125,70,0.1)" }}
-        >
-          <CheckCircle2 className="w-7 h-7" style={{ color: "#2d7d46" }} />
+      <div style={{ textAlign: "center", padding: "32px 0" }}>
+        <div style={{ width: 52, height: 52, border: `1px solid rgba(201,168,76,0.4)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <CheckCircle2 size={24} style={{ color: C.gold }} />
         </div>
-        <h3 className="font-display text-2xl font-light mb-2" style={{ color: "#141414" }}>
-          Claim Successful
-        </h3>
-        <p className="text-sm mb-4" style={{ color: "#878680" }}>
+        <h3 className="font-display" style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 8 }}>Claim Successful</h3>
+        <p style={{ fontFamily: "sans-serif", fontSize: 13, color: C.muted, lineHeight: 1.7, marginBottom: 20 }}>
           {(Number(policy.payoutAmount) / 1e7).toLocaleString()} USDC transferred to your beneficiary.
           Verified on Stellar Soroban via Groth16 proof.
         </p>
         {claimTxHash && (
-          <div
-            className="rounded-lg p-3 text-left"
-            style={{ background: "#f5f4ef", border: "1px solid #e5e4df" }}
-          >
-            <div className="text-xs font-medium tracking-wider uppercase mb-1" style={{ color: "#878680" }}>
-              Transaction
-            </div>
-            <div className="font-mono text-xs break-all" style={{ color: "#878680" }}>
-              {claimTxHash}
-            </div>
+          <div style={{ padding: "12px 16px", background: C.card2, border: `1px solid ${C.border}`, textAlign: "left" }}>
+            <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>Transaction</div>
+            <div style={{ fontFamily: "monospace", fontSize: 11, color: C.muted, wordBreak: "break-all" }}>{claimTxHash}</div>
           </div>
         )}
       </div>
@@ -126,82 +123,82 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
   }
 
   return (
-    <div className="space-y-5">
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Policy summary */}
-      <div className="rounded-lg p-4" style={{ background: "#f5f4ef", border: "1px solid #e5e4df" }}>
-        <div className="text-xs font-medium tracking-wider uppercase mb-1" style={{ color: "#878680" }}>
-          Policy Condition
-        </div>
-        <div className="text-sm" style={{ color: "#141414" }}>
-          Pays{" "}
-          <span className="font-medium">
-            {(Number(policy.payoutAmount) / 1e7).toFixed(2)} USDC
-          </span>{" "}
-          when{" "}
-          <span className="font-medium">
-            {ORACLE_LABELS[policy.oracleType] ?? policy.oracleType}
-          </span>{" "}
-          {conditionLabel}
+      <div style={{ padding: "14px 16px", background: C.card2, border: `1px solid ${C.border}` }}>
+        <div style={{ fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: C.faint, marginBottom: 6 }}>Policy Condition</div>
+        <div style={{ fontFamily: "sans-serif", fontSize: 13, color: C.text }}>
+          Pays <span style={{ fontWeight: 600, color: C.gold }}>{(Number(policy.payoutAmount) / 1e7).toFixed(2)} USDC</span>{" "}
+          when <span style={{ fontWeight: 600 }}>{ORACLE_LABELS[policy.oracleType] ?? policy.oracleType}</span> {conditionLabel}
         </div>
       </div>
 
-      {/* Step 1 */}
+      {/* Live price status */}
+      {livePrice !== null && (
+        <div style={{
+          padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+          background: liveConditionMet ? "rgba(110,231,183,0.05)" : C.card2,
+          border: liveConditionMet ? "1px solid rgba(110,231,183,0.25)" : `1px solid ${C.border}`,
+        }}>
+          {liveConditionMet
+            ? <TrendingDown size={14} style={{ color: "#6ee7b7", flexShrink: 0 }} />
+            : <TrendingUp   size={14} style={{ color: C.faint,   flexShrink: 0 }} />}
+          <div style={{ fontFamily: "sans-serif", fontSize: 13 }}>
+            <span style={{ fontWeight: 600, color: liveConditionMet ? "#6ee7b7" : C.text }}>
+              Live {ORACLE_LABELS[policy.oracleType] ?? policy.oracleType}: ${livePrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            {" — "}
+            <span style={{ color: liveConditionMet ? "#6ee7b7" : "#fca5a5" }}>
+              {liveConditionMet ? "Condition triggered. Claim is valid." : "Condition not yet triggered."}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Oracle input */}
       <div>
-        <label className="block text-xs font-medium tracking-wider uppercase mb-2" style={{ color: "#878680" }}>
-          Step 1 — Enter Oracle Value (USD)
+        <label style={{ display: "block", fontFamily: "sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: C.muted, marginBottom: 6 }}>
+          Step 1 — Oracle Value (USD)
         </label>
-        <p className="text-xs mb-3" style={{ color: "#b0afa9" }}>
-          The exact value stays private. Only the ZK proof is submitted on-chain.
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.faint, marginBottom: 10 }}>
+          Pre-filled with the live price. The exact value stays private — only the ZK proof is submitted on-chain.
         </p>
-        <div className="relative">
-          <span
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm"
-            style={{ color: "#878680" }}
-          >
-            $
-          </span>
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: C.muted, fontFamily: "sans-serif", fontSize: 14 }}>$</span>
           <input
             type="number"
             value={oracleValue}
-            onChange={(e) => setOracleValue(e.target.value)}
+            onChange={e => setOracleValue(e.target.value)}
             placeholder="e.g. 45000"
             disabled={state.status === "generating" || claimState === "proven"}
-            className="w-full pl-8 pr-4 py-3 rounded-lg text-sm transition-colors"
             style={{
-              background: "#ffffff",
-              border: "1px solid #e5e4df",
-              color: "#141414",
-              outline: "none",
+              width: "100%", paddingLeft: 30, paddingRight: 16, paddingTop: 12, paddingBottom: 12,
+              background: C.bg, border: `1px solid ${C.border}`,
+              color: C.text, fontFamily: "sans-serif", fontSize: 14, outline: "none", borderRadius: 0,
             }}
-            onFocus={(e) => (e.target.style.borderColor = "#141414")}
-            onBlur={(e) => (e.target.style.borderColor = "#e5e4df")}
+            onFocus={e => (e.target.style.borderColor = C.gold)}
+            onBlur={e  => (e.target.style.borderColor = C.border)}
           />
         </div>
       </div>
 
-      {/* Step 2: Generate */}
+      {/* Generate proof button */}
       {claimState === "idle" && (
         <button
           onClick={handleGenerateProof}
           disabled={!oracleValue || state.status === "generating"}
-          className="w-full py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-opacity"
           style={{
-            background: "#141414",
-            color: "#ffffff",
-            opacity: !oracleValue || state.status === "generating" ? 0.4 : 1,
+            width: "100%", padding: "13px 0", background: C.gold, border: "none",
+            color: C.bg, cursor: (!oracleValue || state.status === "generating") ? "not-allowed" : "pointer",
+            fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            opacity: (!oracleValue || state.status === "generating") ? 0.4 : 1, borderRadius: 0,
           }}
         >
           {state.status === "generating" ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              {(state as { status: "generating"; progress: string }).progress}
-            </>
+            <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />{(state as any).progress}</>
           ) : (
-            <>
-              <Cpu className="w-4 h-4" />
-              Step 2 — Generate ZK Proof
-              <ArrowRight className="w-4 h-4" />
-            </>
+            <><Cpu size={14} />Step 2 — Generate ZK Proof<ArrowRight size={14} /></>
           )}
         </button>
       )}
@@ -209,23 +206,17 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
       {/* Proof result + submit */}
       {state.status === "done" && (claimState === "proven" || claimState === "submitting") && (
         <>
-          <div
-            className="rounded-lg p-4"
-            style={{ background: "rgba(45,125,70,0.05)", border: "1px solid rgba(45,125,70,0.2)" }}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle2 className="w-4 h-4" style={{ color: "#2d7d46" }} />
-              <span className="text-sm font-medium" style={{ color: "#2d7d46" }}>
+          <div style={{ padding: "16px", background: "rgba(110,231,183,0.04)", border: "1px solid rgba(110,231,183,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <CheckCircle2 size={14} style={{ color: "#6ee7b7" }} />
+              <span style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: "#6ee7b7" }}>
                 Proof generated. Condition verified.
               </span>
             </div>
-            <p className="text-xs mb-3" style={{ color: "#878680" }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: 11, color: C.muted, marginBottom: 12 }}>
               The proof confirms the oracle condition was met without revealing the exact value on-chain.
             </p>
-            <div
-              className="rounded p-2 font-mono text-xs overflow-hidden"
-              style={{ background: "#f5f4ef", color: "#b0afa9" }}
-            >
+            <div style={{ padding: "8px 10px", background: C.card2, fontFamily: "monospace", fontSize: 11, color: C.faint }}>
               Public signals: {state.result.publicSignals.slice(0, 3).join(", ")}...
             </div>
           </div>
@@ -233,24 +224,18 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
           <button
             onClick={handleSubmitClaim}
             disabled={claimState === "submitting"}
-            className="w-full py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-opacity"
             style={{
-              background: "#141414",
-              color: "#ffffff",
-              opacity: claimState === "submitting" ? 0.6 : 1,
+              width: "100%", padding: "13px 0", background: C.gold, border: "none",
+              color: C.bg, cursor: claimState === "submitting" ? "not-allowed" : "pointer",
+              fontFamily: "sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              opacity: claimState === "submitting" ? 0.6 : 1, borderRadius: 0,
             }}
           >
             {claimState === "submitting" ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Submitting proof to Stellar...
-              </>
+              <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />Submitting proof to Stellar...</>
             ) : (
-              <>
-                <Lock className="w-4 h-4" />
-                Step 3 — Submit Proof and Claim Payout
-                <ArrowRight className="w-4 h-4" />
-              </>
+              <><Lock size={14} />Step 3 — Submit Proof and Claim Payout<ArrowRight size={14} /></>
             )}
           </button>
         </>
@@ -258,18 +243,13 @@ export default function ClaimFlow({ policy, onClaimed }: Props) {
 
       {/* Errors */}
       {(state.status === "error" || error) && (
-        <div
-          className="rounded-lg p-3 flex items-start gap-2 text-sm"
-          style={{ background: "rgba(155,28,28,0.05)", border: "1px solid rgba(155,28,28,0.2)", color: "#9b1c1c" }}
-        >
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>
-            {state.status === "error"
-              ? (state as { status: "error"; error: string }).error
-              : error}
+        <div style={{ padding: "12px 16px", display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(252,165,165,0.05)", border: "1px solid rgba(252,165,165,0.2)", color: "#fca5a5" }}>
+          <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontFamily: "sans-serif", fontSize: 13, flex: 1 }}>
+            {state.status === "error" ? (state as any).error : error}
           </span>
-          <button onClick={reset} className="ml-auto flex-shrink-0">
-            <RotateCcw className="w-3.5 h-3.5" />
+          <button onClick={reset} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#fca5a5", padding: 0, flexShrink: 0 }}>
+            <RotateCcw size={12} />
           </button>
         </div>
       )}

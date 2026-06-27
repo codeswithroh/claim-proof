@@ -1,28 +1,78 @@
 @import "tailwindcss";
 
-* {
-  box-sizing: border-box;
+:root {
+  --ad-bg:       #0d0b06;
+  --ad-card:     #1a1610;
+  --ad-gold:     #c9a84c;
+  --ad-gold-lt:  #e2c56a;
+  --ad-cream:    #f0e6c8;
+  --ad-brass:    #a89060;
+  --ad-border:   rgba(201, 168, 76, 0.22);
 }
 
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Art Deco: strip all corner rounding globally */
+[class*="rounded"] { border-radius: 0 !important; }
+button, input, select, textarea { border-radius: 0 !important; }
+
 body {
-  background: #f5f4ef;
-  color: #141414;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--ad-bg);
+  color: var(--ad-cream);
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .font-display {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Art Deco card — diagonal corner ornaments (top-left + bottom-right) */
+.ad-card { position: relative; }
+.ad-card::before {
+  content: '';
+  position: absolute;
+  top: 5px; left: 5px;
+  width: 14px; height: 14px;
+  border-top: 1px solid rgba(201, 168, 76, 0.55);
+  border-left: 1px solid rgba(201, 168, 76, 0.55);
+  pointer-events: none;
+  z-index: 1;
+}
+.ad-card::after {
+  content: '';
+  position: absolute;
+  bottom: 5px; right: 5px;
+  width: 14px; height: 14px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.55);
+  border-right: 1px solid rgba(201, 168, 76, 0.55);
+  pointer-events: none;
+  z-index: 1;
 }
 
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #f5f4ef; }
-::-webkit-scrollbar-thumb { background: #d4d3ce; border-radius: 2px; }
+::-webkit-scrollbar-track { background: var(--ad-bg); }
+::-webkit-scrollbar-thumb { background: rgba(201, 168, 76, 0.28); border-radius: 0; }
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+@keyframes fan-pulse {
+  from { opacity: 0.65; }
+  to   { opacity: 1; }
+}
+
+@keyframes ad-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
